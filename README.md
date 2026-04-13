@@ -4,15 +4,17 @@ Telegram 多机器人网关的**管理台前端**（Vue 3 + TypeScript + Vite + 
 
 ## 配套后端
 
-后端仓库：[telegram-notification](https://github.com/yclenove/telegram-notification)（或你自建的同名服务）。
+后端仓库：[telegram-relay](https://github.com/yclenove/telegram-relay)。
 
-本地开发时将 `VITE_API_BASE_URL` 指向后端 HTTP 地址（如 `http://127.0.0.1:8080`）。
+本地开发推荐：**`VITE_API_BASE_URL` 留空**，由 Vite 把浏览器的 `/api/*` 代理到 relay（默认 `http://127.0.0.1:8080`，可通过 `.env` 里的 `VITE_PROXY_TARGET` 修改）。这样无需在后端开 CORS。
+
+若你希望浏览器**直连**后端（不经过代理），再把 `VITE_API_BASE_URL` 设为完整网关地址，并确保 relay 已配置允许该前端源的 CORS。
 
 ## 快速开始
 
 ```bash
 cp .env.example .env
-# 编辑 .env：VITE_API_BASE_URL=http://127.0.0.1:8080
+# 按需编辑 .env（例如 relay 非 8080 时改 VITE_PROXY_TARGET）
 npm install
 npm run dev
 ```
