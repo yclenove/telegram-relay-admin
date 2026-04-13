@@ -3,7 +3,7 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import * as adminApi from '@/api/admin'
 import type { RoleRow, UserSummaryRow } from '@/api/types'
-import { getErrorMessage } from '@/utils/error'
+import { getErrorMessage, isMessageBoxUserDismiss } from '@/utils/error'
 
 const list = ref<UserSummaryRow[]>([])
 const roles = ref<RoleRow[]>([])
@@ -108,7 +108,7 @@ async function onDelete(row: UserSummaryRow) {
     ElMessage.success('已删除')
     await load()
   } catch (e: unknown) {
-    if (e === 'cancel') return
+    if (isMessageBoxUserDismiss(e)) return
     ElMessage.error(getErrorMessage(e))
   }
 }
