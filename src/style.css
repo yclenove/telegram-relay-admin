@@ -15,7 +15,7 @@
   --relay-page-bg: linear-gradient(
     165deg,
     var(--el-bg-color-page) 0%,
-    var(--el-fill-color-lighter) 45%,
+    var(--el-fill-color-lighter) 42%,
     var(--el-bg-color-page) 100%
   );
   --relay-header-height: 56px;
@@ -23,12 +23,24 @@
   --relay-accent-events: var(--el-color-primary);
   --relay-accent-jobs: var(--el-color-warning);
   --relay-accent-config: var(--el-color-success);
+  /* 卡片层级阴影：比 EP 默认略「立」一点，又不过分抢眼 */
+  --relay-shadow-card: 0 2px 14px rgba(0, 0, 0, 0.06);
+  --relay-shadow-card-hover: 0 8px 24px rgba(0, 0, 0, 0.08);
+  /* 与 EP 圆角协调，表单控件略统一 */
+  --el-border-radius-base: 10px;
 }
 
 body {
   margin: 0;
-  font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
+  font-family:
+    'Segoe UI',
+    'PingFang SC',
+    'Hiragino Sans GB',
+    'Microsoft YaHei',
+    system-ui,
+    sans-serif;
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 #app {
@@ -43,21 +55,33 @@ body {
   min-height: calc(100vh - var(--relay-header-height) - var(--relay-space-lg));
 }
 
-/* 各业务页统一页标题 */
+/* 各业务页统一页标题：下划线色条增强「控制台」感，避免纯字飘在空白上 */
 .relay-page-title {
   margin: 0 0 var(--relay-space-xs);
-  font-size: 20px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
+  font-size: 21px;
+  font-weight: 650;
+  letter-spacing: 0.03em;
   color: var(--el-text-color-primary);
-  line-height: 1.3;
+  line-height: 1.25;
+}
+
+.relay-page-title::after {
+  content: '';
+  display: block;
+  width: 36px;
+  height: 3px;
+  margin-top: 10px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--el-color-primary), var(--el-color-primary-light-5));
+  opacity: 0.92;
 }
 
 .relay-page-desc {
-  margin: 0 0 var(--relay-space-md);
+  margin: 12px 0 var(--relay-space-md);
+  max-width: 56rem;
   font-size: 13px;
   color: var(--el-text-color-secondary);
-  line-height: 1.5;
+  line-height: 1.6;
 }
 
 /* 区块与表格之间的垂直间距 */
@@ -65,15 +89,34 @@ body {
   margin-bottom: var(--relay-space-md);
 }
 
-/* 顶部筛选/新建表单所在卡片，与列表表格视觉分离 */
-.relay-toolbar-card {
+/* 顶部筛选/新建：独立浮层感，与下方表格区形成清晰两级信息架构 */
+.relay-toolbar-card.el-card {
   border-radius: var(--relay-radius);
   margin-bottom: var(--relay-space-md);
+  border: 1px solid var(--el-border-color-lighter);
+  box-shadow: var(--relay-shadow-card);
+  background: linear-gradient(165deg, var(--el-bg-color) 0%, var(--el-fill-color-blank) 100%);
+  transition:
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.relay-toolbar-card.el-card:hover {
+  border-color: var(--el-border-color);
+  box-shadow: var(--relay-shadow-card-hover);
 }
 
 /* 全局样式中不使用 Vue 的 :deep；直接后代选择器即可命中 Element Plus 卡片结构 */
 .relay-toolbar-card .el-card__body {
-  padding-bottom: 8px;
+  padding: 14px 18px 12px;
+}
+
+.relay-toolbar-card .el-card__header {
+  padding: 12px 18px;
+  font-weight: 600;
+  font-size: 14px;
+  border-bottom: 1px solid var(--el-border-color-lighter);
+  background: var(--el-fill-color-lighter);
 }
 
 .relay-actions-footer {
@@ -93,29 +136,55 @@ body {
   gap: var(--relay-space-md);
 }
 
+.relay-toolbar-actions .el-text {
+  flex: 1;
+  min-width: 160px;
+  line-height: 1.55;
+}
+
 /* 列表区域：与工具条分离；卡片化圆角阴影 + 表头底纹，比裸表格更易读。 */
 .relay-table-wrap {
   margin-top: 0;
   background: var(--el-bg-color);
   border: 1px solid var(--el-border-color-lighter);
   border-radius: var(--relay-radius);
-  box-shadow: var(--el-box-shadow-lighter);
+  box-shadow: var(--relay-shadow-card);
   overflow: hidden;
+  transition: box-shadow 0.2s ease;
+}
+
+.relay-table-wrap:hover {
+  box-shadow: var(--relay-shadow-card-hover);
 }
 
 .relay-table-wrap .el-table {
   --el-table-border-color: var(--el-border-color-lighter);
+  --el-table-header-bg-color: var(--el-fill-color-light);
 }
 
 .relay-table-wrap .el-table thead th.el-table__cell {
-  background-color: var(--el-fill-color-light) !important;
+  background: linear-gradient(180deg, var(--el-fill-color-light) 0%, var(--el-fill-color) 100%) !important;
   color: var(--el-text-color-primary);
   font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.02em;
 }
 
 .relay-table-wrap .el-table .el-table__cell {
-  padding-top: 10px;
-  padding-bottom: 10px;
+  padding-top: 11px;
+  padding-bottom: 11px;
+}
+
+.relay-table-wrap .el-table__body tr:hover > td.el-table__cell {
+  background-color: var(--el-fill-color-light) !important;
+}
+
+.relay-table-wrap .el-table--striped .el-table__body tr.el-table__row--striped td.el-table__cell {
+  background-color: var(--el-fill-color-blank) !important;
+}
+
+.relay-table-wrap .el-table--striped .el-table__body tr.el-table__row--striped:hover > td.el-table__cell {
+  background-color: var(--el-fill-color-light) !important;
 }
 
 /* 空状态占位略加高度，避免表格区只剩一条细线 */

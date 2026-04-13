@@ -167,7 +167,12 @@ onMounted(load)
     var(--el-fill-color-lighter) 55%,
     var(--el-bg-color) 100%
   );
-  box-shadow: var(--el-box-shadow-lighter);
+  box-shadow: var(--relay-shadow-card, var(--el-box-shadow-lighter));
+  transition: box-shadow 0.25s ease;
+}
+
+.dashboard-surface:hover {
+  box-shadow: var(--relay-shadow-card-hover, var(--el-box-shadow));
 }
 
 .dashboard-surface :deep(.el-card__body) {
@@ -216,6 +221,17 @@ onMounted(load)
   overflow: hidden;
   border: 1px solid var(--el-border-color-lighter);
   min-height: 118px;
+  background: linear-gradient(145deg, var(--el-bg-color) 0%, var(--el-fill-color-blank) 100%);
+  transition:
+    transform 0.22s ease,
+    box-shadow 0.22s ease,
+    border-color 0.22s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--el-color-primary-light-7);
+  box-shadow: var(--relay-shadow-card-hover, 0 8px 24px rgba(0, 0, 0, 0.08));
 }
 
 .stat-card :deep(.el-card__body) {

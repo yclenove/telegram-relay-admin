@@ -2,6 +2,7 @@
 import type { Component } from 'vue'
 import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+// 品牌区使用 Promotion 作轻量角标，与纯文案侧栏形成视觉锚点。
 import {
   Avatar,
   Bell,
@@ -14,6 +15,7 @@ import {
   Odometer,
   Position,
   UserFilled,
+  Promotion,
 } from '@element-plus/icons-vue'
 import { useAuthStore } from '@/stores/auth'
 
@@ -55,8 +57,14 @@ function canSee(item: MenuItem) {
     <el-aside :width="collapsed ? '72px' : '228px'" class="aside">
       <div class="brand-row">
         <div class="brand">
-          <span v-show="!collapsed" class="brand-text">Telegram 网关</span>
-          <span v-show="collapsed" class="brand-mini">TG</span>
+          <span class="brand-mark" aria-hidden="true">
+            <el-icon :size="22"><Promotion /></el-icon>
+          </span>
+          <div class="brand-titles">
+            <span v-show="!collapsed" class="brand-text">Telegram 网关</span>
+            <span v-show="collapsed" class="brand-mini">TG</span>
+            <span v-show="!collapsed" class="brand-sub">Relay Admin</span>
+          </div>
         </div>
         <el-button
           class="collapse-trigger"
@@ -112,12 +120,16 @@ function canSee(item: MenuItem) {
               <li v-for="p in auth.permissions" :key="p">{{ p }}</li>
             </ul>
           </el-popover>
-          <el-button type="primary" link @click="onLogout">退出</el-button>
+          <el-button type="primary" link class="logout-btn" @click="onLogout">退出</el-button>
         </div>
       </el-header>
       <el-main class="main">
         <div class="relay-page-inner">
-          <router-view />
+          <router-view v-slot="{ Component }">
+            <transition name="relay-view" mode="out-in">
+              <component :is="Component" />
+            </transition>
+          </router-view>
         </div>
       </el-main>
     </el-container>
@@ -132,7 +144,12 @@ function canSee(item: MenuItem) {
   border-right: 1px solid var(--el-border-color-light);
   display: flex;
   flex-direction: column;
-  background: var(--relay-sidebar-bg);
+  background: linear-gradient(
+    175deg,
+    var(--el-fill-color-darker) 0%,
+    var(--relay-sidebar-bg) 28%,
+    var(--el-fill-color-light) 100%
+  );
   transition: width 0.2s ease;
 }
 .brand-row {
@@ -147,12 +164,41 @@ function canSee(item: MenuItem) {
 .brand {
   flex: 1;
   min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.brand-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  flex-shrink: 0;
+  color: var(--el-color-primary);
+  background: linear-gradient(145deg, var(--el-color-primary-light-9), var(--el-fill-color));
+  border: 1px solid var(--el-color-primary-light-7);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+.brand-titles {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
 }
 .brand-text {
   font-weight: 700;
   font-size: 15px;
   letter-spacing: 0.04em;
   color: var(--el-text-color-primary);
+}
+.brand-sub {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--el-text-color-secondary);
 }
 .brand-mini {
   display: block;
@@ -184,10 +230,10 @@ function canSee(item: MenuItem) {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 var(--relay-space-md);
+  padding: 0 var(--relay-space-lg);
   border-bottom: 1px solid var(--el-border-color-lighter);
-  background: var(--relay-main-surface);
-  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.02);
+  background: linear-gradient(180deg, var(--relay-main-surface) 0%, var(--el-fill-color-blank) 100%);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
 }
 .header-left {
   min-width: 0;
@@ -198,10 +244,11 @@ function canSee(item: MenuItem) {
   gap: 2px;
 }
 .title {
-  font-size: 17px;
-  font-weight: 600;
+  font-size: 18px;
+  font-weight: 650;
   color: var(--el-text-color-primary);
   line-height: 1.2;
+  letter-spacing: 0.02em;
 }
 .subtitle {
   line-height: 1.2;
@@ -214,6 +261,16 @@ function canSee(item: MenuItem) {
 }
 .perm-chip {
   cursor: pointer;
+  border-radius: 999px;
+  padding: 0 12px;
+}
+.logout-btn {
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-weight: 500;
+}
+.logout-btn:hover {
+  background: var(--el-fill-color-light);
 }
 .main {
   background: var(--relay-page-bg);
@@ -237,5 +294,45 @@ function canSee(item: MenuItem) {
   font-size: 13px;
   line-height: 1.65;
   word-break: break-all;
+}
+
+/* 侧栏菜单：圆角项 + 激活态渐变，比默认「一条灰」更精致（仅作用于本壳层下的 el-menu） */
+.aside .side-menu.el-menu {
+  padding: 6px 0 16px;
+  border-right: none;
+  background: transparent;
+}
+.aside .side-menu .el-menu-item {
+  height: 44px !important;
+  line-height: 44px !important;
+  margin: 3px 10px;
+  border-radius: 10px;
+  color: var(--el-text-color-regular);
+}
+.aside .side-menu .el-menu-item:hover {
+  background-color: var(--el-fill-color) !important;
+}
+.aside .side-menu .el-menu-item.is-active {
+  background: linear-gradient(90deg, var(--el-color-primary-light-9), var(--el-color-primary-light-8)) !important;
+  color: var(--el-color-primary) !important;
+  font-weight: 600;
+  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.06);
+}
+.aside .side-menu.el-menu--collapse .el-menu-item {
+  margin: 4px 8px;
+  padding: 0 !important;
+}
+
+/* 子路由切换：轻量淡入上移，减少「整页硬切」的简陋感 */
+.relay-view-enter-active,
+.relay-view-leave-active {
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+}
+.relay-view-enter-from,
+.relay-view-leave-to {
+  opacity: 0;
+  transform: translateY(8px);
 }
 </style>
