@@ -1,7 +1,10 @@
 <script setup lang="ts">
-// 根组件仅挂载路由视图，具体布局由各路由页面承担。
+import { ElConfigProvider } from 'element-plus'
+import zhCn from 'element-plus/es/locale/lang/zh-cn'
 </script>
 
 <template>
-  <router-view />
+  <el-config-provider :locale="zhCn">
+    <router-view />
+  </el-config-provider>
 </template>

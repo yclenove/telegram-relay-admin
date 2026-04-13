@@ -27,9 +27,15 @@ npm run build
 
 产物在 `dist/`。将 `dist` 部署到 CDN/Nginx，或把路径配置到后端的 `admin_static_dir` / 环境变量 `ADMIN_STATIC_DIR`，由网关进程托管静态文件。
 
+## 功能概览
+
+- 仪表盘、机器人、**发送目标**（Destination）、路由规则（目标下拉）、事件、审计
+- **用户管理**：列表、新增/编辑（表单内**角色多选**）、删除；依赖后端 `user.manage` 权限（超级管理员默认具备）
+- 登录态将 **token 与 permissions** 写入 `localStorage`，刷新后菜单权限仍有效
+
 ## 与后端联调
 
-1. 启动后端（需 PostgreSQL 等，见后端 README）。
+1. 启动后端（需 PostgreSQL 等，见后端 README），确保已执行迁移（含 `002_user_manage_permission.sql` 或重新引导库）。
 2. 本仓库 `npm run dev`，浏览器访问 Vite 提示的本地端口。
 3. 使用后端引导的管理员账号登录。
 

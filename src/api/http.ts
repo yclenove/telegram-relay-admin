@@ -1,6 +1,8 @@
 import axios, { type AxiosInstance } from 'axios'
 
-const TOKEN_KEY = 'telegram_relay_admin_token'
+export const TOKEN_KEY = 'telegram_relay_admin_token'
+/** 与 auth store 共用，401 时需一并清除 */
+export const PERMISSIONS_KEY = 'telegram_relay_admin_permissions'
 
 /**
  * 创建 Axios 实例并挂请求拦截器。
@@ -28,6 +30,7 @@ function createHttp(): AxiosInstance {
       const url = ax.config?.url ?? ''
       if (status === 401 && !url.includes('/auth/login')) {
         localStorage.removeItem(TOKEN_KEY)
+        localStorage.removeItem(PERMISSIONS_KEY)
         if (typeof window !== 'undefined' && !window.location.pathname.endsWith('/login')) {
           window.location.assign(`${window.location.origin}${import.meta.env.BASE_URL}login`)
         }
@@ -39,4 +42,3 @@ function createHttp(): AxiosInstance {
 }
 
 export const http = createHttp()
-export { TOKEN_KEY }

@@ -8,6 +8,17 @@ export type BotRow = {
   remark: string
 }
 
+export type DestinationRow = {
+  id: number
+  bot_id: number
+  bot_name?: string
+  name: string
+  chat_id: string
+  topic_id?: string
+  parse_mode: string
+  is_enabled: boolean
+}
+
 export type RuleRow = {
   id: number
   name: string
@@ -39,4 +50,19 @@ export type AuditRow = {
 export type LoginResult = {
   access_token: string
   permissions: string[]
+}
+
+export type RoleRow = {
+  id: number
+  code: string
+  name: string
+}
+
+export type UserSummaryRow = {
+  id: number
+  username: string
+  is_enabled: boolean
+  created_at: string
+  updated_at: string
+  role_ids: number[]
 }

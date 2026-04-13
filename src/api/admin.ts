@@ -1,5 +1,14 @@
 import { http } from './http'
-import type { AuditRow, BotRow, EventRow, LoginResult, RuleRow } from './types'
+import type {
+  AuditRow,
+  BotRow,
+  DestinationRow,
+  EventRow,
+  LoginResult,
+  RoleRow,
+  RuleRow,
+  UserSummaryRow,
+} from './types'
 
 /** 封装管理端 REST 调用，页面只关心业务方法名与类型。 */
 
@@ -28,6 +37,21 @@ export async function createBot(payload: {
   return data
 }
 
+export async function fetchDestinations(): Promise<DestinationRow[]> {
+  const { data } = await http.get<DestinationRow[]>('/api/v2/destinations')
+  return data
+}
+
+export async function createDestination(payload: {
+  bot_id: number
+  name: string
+  chat_id: string
+  parse_mode: string
+}): Promise<unknown> {
+  const { data } = await http.post('/api/v2/destinations', payload)
+  return data
+}
+
 export async function fetchRules(): Promise<RuleRow[]> {
   const { data } = await http.get<RuleRow[]>('/api/v2/rules')
   return data
@@ -52,4 +76,36 @@ export async function fetchEvents(): Promise<EventRow[]> {
 export async function fetchAudits(): Promise<AuditRow[]> {
   const { data } = await http.get<AuditRow[]>('/api/v2/audits')
   return data
+}
+
+export async function fetchRoles(): Promise<RoleRow[]> {
+  const { data } = await http.get<RoleRow[]>('/api/v2/roles')
+  return data
+}
+
+export async function fetchUsers(): Promise<UserSummaryRow[]> {
+  const { data } = await http.get<UserSummaryRow[]>('/api/v2/users')
+  return data
+}
+
+export async function createUser(payload: {
+  username: string
+  password: string
+  is_enabled?: boolean
+  role_ids: number[]
+}): Promise<UserSummaryRow> {
+  const { data } = await http.post<UserSummaryRow>('/api/v2/users', payload)
+  return data
+}
+
+export async function patchUser(
+  id: number,
+  payload: { is_enabled?: boolean; password?: string; role_ids?: number[] },
+): Promise<UserSummaryRow> {
+  const { data } = await http.patch<UserSummaryRow>(`/api/v2/users/${id}`, payload)
+  return data
+}
+
+export async function deleteUser(id: number): Promise<void> {
+  await http.delete(`/api/v2/users/${id}`)
 }

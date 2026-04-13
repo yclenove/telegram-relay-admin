@@ -3,6 +3,7 @@ import { onMounted, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import * as adminApi from '@/api/admin'
 import type { AuditRow } from '@/api/types'
+import { getErrorMessage } from '@/utils/error'
 
 const list = ref<AuditRow[]>([])
 const loading = ref(false)
@@ -12,7 +13,7 @@ async function load() {
   try {
     list.value = await adminApi.fetchAudits()
   } catch (e: unknown) {
-    ElMessage.error(String(e))
+    ElMessage.error(getErrorMessage(e))
   } finally {
     loading.value = false
   }

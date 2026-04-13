@@ -1,3 +1,4 @@
+import type { NavigationGuardReturn } from 'vue-router'
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
@@ -5,9 +6,11 @@ const LoginView = () => import('@/views/LoginView.vue')
 const MainLayout = () => import('@/layouts/MainLayout.vue')
 const DashboardView = () => import('@/views/DashboardView.vue')
 const BotsView = () => import('@/views/BotsView.vue')
+const DestinationsView = () => import('@/views/DestinationsView.vue')
 const RulesView = () => import('@/views/RulesView.vue')
 const EventsView = () => import('@/views/EventsView.vue')
 const AuditsView = () => import('@/views/AuditsView.vue')
+const UsersView = () => import('@/views/UsersView.vue')
 
 export const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -21,33 +24,37 @@ export const router = createRouter({
         { path: '', redirect: { name: 'dashboard' } },
         { path: 'dashboard', name: 'dashboard', component: DashboardView, meta: { title: '仪表盘' } },
         { path: 'bots', name: 'bots', component: BotsView, meta: { title: '机器人', perm: 'bot.manage' } },
+        {
+          path: 'destinations',
+          name: 'destinations',
+          component: DestinationsView,
+          meta: { title: '发送目标', perm: 'bot.manage' },
+        },
         { path: 'rules', name: 'rules', component: RulesView, meta: { title: '路由规则', perm: 'rule.manage' } },
         { path: 'events', name: 'events', component: EventsView, meta: { title: '事件', perm: 'event.read' } },
         { path: 'audits', name: 'audits', component: AuditsView, meta: { title: '审计', perm: 'audit.read' } },
+        { path: 'users', name: 'users', component: UsersView, meta: { title: '用户管理', perm: 'user.manage' } },
       ],
     },
     { path: '/:pathMatch(.*)*', redirect: '/dashboard' },
   ],
 })
 
-router.beforeEach((to, _from, next) => {
+// Vue Router 4 推荐返回值式守卫，避免 next() 弃用警告。
+router.beforeEach((to): NavigationGuardReturn => {
   const auth = useAuthStore()
   if (to.meta.public) {
     if (auth.isLoggedIn && to.path === '/login') {
-      next({ name: 'dashboard' })
-      return
+      return { name: 'dashboard' }
     }
-    next()
-    return
+    return true
   }
   if (to.meta.requiresAuth && !auth.isLoggedIn) {
-    next({ name: 'login', query: { redirect: to.fullPath } })
-    return
+    return { name: 'login', query: { redirect: to.fullPath } }
   }
   const perm = to.meta.perm as string | undefined
   if (perm && !auth.hasPermission(perm)) {
-    next({ name: 'dashboard' })
-    return
+    return { name: 'dashboard' }
   }
-  next()
+  return true
 })

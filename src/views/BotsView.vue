@@ -3,6 +3,7 @@ import { onMounted, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import * as adminApi from '@/api/admin'
 import type { BotRow } from '@/api/types'
+import { getErrorMessage } from '@/utils/error'
 
 const list = ref<BotRow[]>([])
 const loading = ref(false)
@@ -13,7 +14,7 @@ async function load() {
   try {
     list.value = await adminApi.fetchBots()
   } catch (e: unknown) {
-    ElMessage.error(String(e))
+    ElMessage.error(getErrorMessage(e))
   } finally {
     loading.value = false
   }
@@ -30,7 +31,7 @@ async function onCreate() {
     form.value = { name: '', bot_token: '', remark: '', is_default: false }
     await load()
   } catch (e: unknown) {
-    ElMessage.error(String(e))
+    ElMessage.error(getErrorMessage(e))
   }
 }
 
