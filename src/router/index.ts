@@ -9,7 +9,9 @@ const BotsView = () => import('@/views/BotsView.vue')
 const DestinationsView = () => import('@/views/DestinationsView.vue')
 const RulesView = () => import('@/views/RulesView.vue')
 const EventsView = () => import('@/views/EventsView.vue')
+const DispatchJobsView = () => import('@/views/DispatchJobsView.vue')
 const AuditsView = () => import('@/views/AuditsView.vue')
+const RolesView = () => import('@/views/RolesView.vue')
 const UsersView = () => import('@/views/UsersView.vue')
 
 export const router = createRouter({
@@ -31,8 +33,15 @@ export const router = createRouter({
           meta: { title: '发送目标', perm: 'bot.manage' },
         },
         { path: 'rules', name: 'rules', component: RulesView, meta: { title: '路由规则', perm: 'rule.manage' } },
-        { path: 'events', name: 'events', component: EventsView, meta: { title: '事件', perm: 'event.read' } },
+        { path: 'events', name: 'events', component: EventsView, meta: { title: '事件中心', perm: 'event.read' } },
+        {
+          path: 'dispatch-jobs',
+          name: 'dispatch-jobs',
+          component: DispatchJobsView,
+          meta: { title: '发送任务', perm: 'event.read' },
+        },
         { path: 'audits', name: 'audits', component: AuditsView, meta: { title: '审计', perm: 'audit.read' } },
+        { path: 'roles', name: 'roles', component: RolesView, meta: { title: '角色与权限', perm: 'user.manage' } },
         { path: 'users', name: 'users', component: UsersView, meta: { title: '用户管理', perm: 'user.manage' } },
       ],
     },

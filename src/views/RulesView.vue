@@ -13,6 +13,7 @@ const form = ref({
   priority: 100,
   match_source: '',
   match_level: '',
+  match_labels: '{}',
   destination_id: undefined as number | undefined,
 })
 
@@ -23,6 +24,7 @@ const editForm = reactive({
   priority: 100,
   match_source: '',
   match_level: '',
+  match_labels: '{}',
   destination_id: undefined as number | undefined,
   is_enabled: true,
 })
@@ -57,11 +59,13 @@ async function onCreate() {
     return
   }
   try {
+    JSON.parse(form.value.match_labels || '{}')
     await adminApi.createRule({
       name: form.value.name,
       priority: Number(form.value.priority),
       match_source: form.value.match_source,
       match_level: form.value.match_level,
+      match_labels: form.value.match_labels.trim() || '{}',
       destination_id: Number(form.value.destination_id),
     })
     ElMessage.success('已创建')
@@ -70,10 +74,15 @@ async function onCreate() {
       priority: 100,
       match_source: '',
       match_level: '',
+      match_labels: '{}',
       destination_id: undefined,
     }
     await load()
   } catch (e: unknown) {
+    if (e instanceof SyntaxError) {
+      ElMessage.warning('match_labels 须为合法 JSON')
+      return
+    }
     ElMessage.error(getErrorMessage(e))
   }
 }
@@ -84,6 +93,7 @@ function openEdit(row: RuleRow) {
   editForm.priority = row.priority
   editForm.match_source = row.match_source
   editForm.match_level = row.match_level
+  editForm.match_labels = row.match_labels?.trim() || '{}'
   editForm.destination_id = row.destination_id
   editForm.is_enabled = row.is_enabled ?? true
   dialogVisible.value = true
@@ -100,11 +110,13 @@ async function onSaveEdit() {
     return
   }
   try {
+    JSON.parse(editForm.match_labels || '{}')
     await adminApi.patchRule(editing.value.id, {
       name: editForm.name.trim(),
       priority: editForm.priority,
       match_source: editForm.match_source,
       match_level: editForm.match_level,
+      match_labels: editForm.match_labels.trim() || '{}',
       destination_id: editForm.destination_id,
       is_enabled: editForm.is_enabled,
     })
@@ -112,6 +124,10 @@ async function onSaveEdit() {
     dialogVisible.value = false
     await load()
   } catch (e: unknown) {
+    if (e instanceof SyntaxError) {
+      ElMessage.warning('match_labels 须为合法 JSON')
+      return
+    }
     ElMessage.error(getErrorMessage(e))
   }
 }
@@ -148,6 +164,15 @@ onMounted(load)
         <el-form-item label="匹配级别">
           <el-input v-model="form.match_level" placeholder="留空=全部" />
         </el-form-item>
+        <el-form-item label="Labels">
+          <el-input
+            v-model="form.match_labels"
+            type="textarea"
+            :rows="2"
+            placeholder='JSON 对象，如 {} 或 {"team":"ops"}'
+            style="width: 360px"
+          />
+        </el-form-item>
         <el-form-item label="发送目标">
           <el-select
             v-model="form.destination_id"
@@ -175,6 +200,9 @@ onMounted(load)
       <el-table-column prop="priority" label="优先级" width="88" />
       <el-table-column prop="match_source" label="来源" />
       <el-table-column prop="match_level" label="级别" />
+      <el-table-column label="Labels" min-width="120" show-overflow-tooltip>
+        <template #default="{ row }">{{ row.match_labels || '{}' }}</template>
+      </el-table-column>
       <el-table-column label="发送目标" min-width="160">
         <template #default="{ row }">{{ destLabel(row.destination_id) }}</template>
       </el-table-column>
@@ -205,6 +233,9 @@ onMounted(load)
         </el-form-item>
         <el-form-item label="匹配级别">
           <el-input v-model="editForm.match_level" placeholder="留空=全部" />
+        </el-form-item>
+        <el-form-item label="Labels">
+          <el-input v-model="editForm.match_labels" type="textarea" :rows="3" placeholder="JSON 对象" />
         </el-form-item>
         <el-form-item label="发送目标">
           <el-select v-model="editForm.destination_id" placeholder="选择目标" style="width: 100%" filterable>

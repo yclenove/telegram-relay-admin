@@ -22,7 +22,9 @@ const menuItems: MenuItem[] = [
   { path: '/destinations', title: '发送目标', perm: 'bot.manage' },
   { path: '/rules', title: '路由规则', perm: 'rule.manage' },
   { path: '/events', title: '事件中心', perm: 'event.read' },
+  { path: '/dispatch-jobs', title: '发送任务', perm: 'event.read' },
   { path: '/audits', title: '审计日志', perm: 'audit.read' },
+  { path: '/roles', title: '角色与权限', perm: 'user.manage' },
   { path: '/users', title: '用户管理', perm: 'user.manage' },
 ]
 

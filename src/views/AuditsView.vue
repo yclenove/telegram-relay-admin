@@ -13,7 +13,17 @@ const pageSize = ref(20)
 const filters = reactive({
   action: '',
   object_type: '',
+  object_id: '',
+  actor_user_id: '',
 })
+/** 时间筛选：选中的时刻会转为 RFC3339 传给后端（与 parseOptionalRFC3339 一致）。 */
+const createdAfter = ref<Date | null>(null)
+const createdBefore = ref<Date | null>(null)
+
+function toISO(d: Date | null): string | undefined {
+  if (!d) return undefined
+  return d.toISOString()
+}
 
 async function load() {
   loading.value = true
@@ -24,6 +34,10 @@ async function load() {
       offset,
       action: filters.action.trim() || undefined,
       object_type: filters.object_type.trim() || undefined,
+      object_id: filters.object_id.trim() || undefined,
+      actor_user_id: filters.actor_user_id.trim() || undefined,
+      created_after: toISO(createdAfter.value),
+      created_before: toISO(createdBefore.value),
     })
     list.value = items
     total.value = t
@@ -42,6 +56,10 @@ function onSearch() {
 function onResetFilters() {
   filters.action = ''
   filters.object_type = ''
+  filters.object_id = ''
+  filters.actor_user_id = ''
+  createdAfter.value = null
+  createdBefore.value = null
   page.value = 1
   load()
 }
@@ -54,10 +72,22 @@ onMounted(load)
     <el-card shadow="never" class="mb">
       <el-form :inline="true" label-width="88px">
         <el-form-item label="动作">
-          <el-input v-model="filters.action" placeholder="如 bot.update" clearable style="width: 180px" />
+          <el-input v-model="filters.action" placeholder="如 bot.update" clearable style="width: 160px" />
         </el-form-item>
         <el-form-item label="对象类型">
-          <el-input v-model="filters.object_type" placeholder="如 bot" clearable style="width: 140px" />
+          <el-input v-model="filters.object_type" placeholder="如 bot" clearable style="width: 120px" />
+        </el-form-item>
+        <el-form-item label="对象 ID">
+          <el-input v-model="filters.object_id" placeholder="精确匹配" clearable style="width: 100px" />
+        </el-form-item>
+        <el-form-item label="操作人 ID">
+          <el-input v-model="filters.actor_user_id" placeholder="用户主键" clearable style="width: 100px" />
+        </el-form-item>
+        <el-form-item label="起始时间">
+          <el-date-picker v-model="createdAfter" type="datetime" placeholder="created_after" clearable style="width: 200px" />
+        </el-form-item>
+        <el-form-item label="结束时间">
+          <el-date-picker v-model="createdBefore" type="datetime" placeholder="created_before" clearable style="width: 200px" />
         </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="onSearch">查询</el-button>
@@ -67,6 +97,7 @@ onMounted(load)
     </el-card>
     <el-table v-loading="loading" :data="list" stripe border max-height="520">
       <el-table-column prop="id" label="ID" width="80" />
+      <el-table-column prop="actor_user_id" label="操作人" width="96" />
       <el-table-column prop="action" label="动作" width="140" />
       <el-table-column prop="object_type" label="对象类型" width="120" />
       <el-table-column prop="object_id" label="对象 ID" width="100" />

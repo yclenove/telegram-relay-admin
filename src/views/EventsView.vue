@@ -2,7 +2,7 @@
 import { onMounted, reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import * as adminApi from '@/api/admin'
-import type { EventRow } from '@/api/types'
+import type { EventDetailRow, EventRow } from '@/api/types'
 import { getErrorMessage } from '@/utils/error'
 
 const list = ref<EventRow[]>([])
@@ -15,6 +15,10 @@ const filters = reactive({
   level: '',
   status: '',
 })
+
+const detailVisible = ref(false)
+const detailLoading = ref(false)
+const detail = ref<EventDetailRow | null>(null)
 
 async function load() {
   loading.value = true
@@ -33,6 +37,20 @@ async function load() {
     ElMessage.error(getErrorMessage(e))
   } finally {
     loading.value = false
+  }
+}
+
+async function openDetail(row: EventRow) {
+  detailVisible.value = true
+  detailLoading.value = true
+  detail.value = null
+  try {
+    detail.value = await adminApi.fetchEvent(row.id)
+  } catch (e: unknown) {
+    ElMessage.error(getErrorMessage(e))
+    detailVisible.value = false
+  } finally {
+    detailLoading.value = false
   }
 }
 
@@ -79,6 +97,11 @@ onMounted(load)
       <el-table-column prop="title" label="标题" min-width="140" show-overflow-tooltip />
       <el-table-column prop="status" label="状态" width="100" />
       <el-table-column prop="created_at" label="时间" min-width="180" />
+      <el-table-column label="操作" width="88" fixed="right">
+        <template #default="{ row }">
+          <el-button type="primary" link @click="openDetail(row)">详情</el-button>
+        </template>
+      </el-table-column>
     </el-table>
     <div class="footer">
       <el-pagination
@@ -93,6 +116,29 @@ onMounted(load)
       />
       <el-button type="primary" @click="load">刷新当前页</el-button>
     </div>
+
+    <el-drawer v-model="detailVisible" title="事件详情" size="560px" destroy-on-close>
+      <el-skeleton v-if="detailLoading" :rows="8" animated />
+      <template v-else-if="detail">
+        <el-descriptions :column="1" border size="small">
+          <el-descriptions-item label="ID">{{ detail.id }}</el-descriptions-item>
+          <el-descriptions-item label="EventID">{{ detail.event_id }}</el-descriptions-item>
+          <el-descriptions-item label="来源 / 级别">{{ detail.source }} / {{ detail.level }}</el-descriptions-item>
+          <el-descriptions-item label="状态">{{ detail.status }}</el-descriptions-item>
+          <el-descriptions-item label="标题">{{ detail.title }}</el-descriptions-item>
+          <el-descriptions-item label="正文">
+            <pre class="mono">{{ detail.message }}</pre>
+          </el-descriptions-item>
+          <el-descriptions-item label="Labels（JSON）">
+            <pre class="mono">{{ detail.labels }}</pre>
+          </el-descriptions-item>
+          <el-descriptions-item label="Raw（JSON）">
+            <pre class="mono small">{{ detail.raw_body }}</pre>
+          </el-descriptions-item>
+          <el-descriptions-item label="创建时间">{{ detail.created_at }}</el-descriptions-item>
+        </el-descriptions>
+      </template>
+    </el-drawer>
   </div>
 </template>
 
@@ -106,5 +152,16 @@ onMounted(load)
   flex-wrap: wrap;
   align-items: center;
   gap: 16px;
+}
+.mono {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: 12px;
+  max-height: 200px;
+  overflow: auto;
+}
+.mono.small {
+  max-height: 160px;
 }
 </style>

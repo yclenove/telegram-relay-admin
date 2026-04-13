@@ -3,13 +3,17 @@ import type {
   AuditRow,
   BotRow,
   DestinationRow,
+  DispatchJobRow,
+  EventDetailRow,
   EventRow,
   LoginResult,
   Paged,
+  RolePermissionsResponse,
   RoleRow,
   RuleRow,
   UserSummaryRow,
 } from './types'
+import { buildAuditsQueryParams, buildDispatchJobsQueryParams, buildEventsQueryParams } from '@/utils/buildListQuery'
 
 /** 封装管理端 REST 调用，页面只关心业务方法名与类型。 */
 
@@ -100,6 +104,7 @@ export async function createRule(payload: {
   priority: number
   match_source: string
   match_level: string
+  match_labels?: string
   destination_id: number
 }): Promise<unknown> {
   const { data } = await http.post('/api/v2/rules', payload)
@@ -113,6 +118,7 @@ export async function patchRule(
     priority?: number
     match_source?: string
     match_level?: string
+    match_labels?: string
     destination_id?: number
     is_enabled?: boolean
   },
@@ -132,14 +138,23 @@ export async function fetchEvents(params?: {
   level?: string
   status?: string
 }): Promise<Paged<EventRow>> {
-  const sp = new URLSearchParams()
-  if (params?.limit != null) sp.set('limit', String(params.limit))
-  if (params?.offset != null) sp.set('offset', String(params.offset))
-  if (params?.source) sp.set('source', params.source)
-  if (params?.level) sp.set('level', params.level)
-  if (params?.status) sp.set('status', params.status)
-  const q = sp.toString()
+  const q = buildEventsQueryParams(params ?? {})
   const { data } = await http.get<Paged<EventRow>>(`/api/v2/events${q ? `?${q}` : ''}`)
+  return data
+}
+
+export async function fetchEvent(id: number): Promise<EventDetailRow> {
+  const { data } = await http.get<EventDetailRow>(`/api/v2/events/${id}`)
+  return data
+}
+
+export async function fetchDispatchJobs(params?: {
+  limit?: number
+  offset?: number
+  status?: string
+}): Promise<Paged<DispatchJobRow>> {
+  const q = buildDispatchJobsQueryParams(params ?? {})
+  const { data } = await http.get<Paged<DispatchJobRow>>(`/api/v2/dispatch-jobs${q ? `?${q}` : ''}`)
   return data
 }
 
@@ -148,19 +163,23 @@ export async function fetchAudits(params?: {
   offset?: number
   action?: string
   object_type?: string
+  object_id?: string
+  actor_user_id?: string
+  created_after?: string
+  created_before?: string
 }): Promise<Paged<AuditRow>> {
-  const sp = new URLSearchParams()
-  if (params?.limit != null) sp.set('limit', String(params.limit))
-  if (params?.offset != null) sp.set('offset', String(params.offset))
-  if (params?.action) sp.set('action', params.action)
-  if (params?.object_type) sp.set('object_type', params.object_type)
-  const q = sp.toString()
+  const q = buildAuditsQueryParams(params ?? {})
   const { data } = await http.get<Paged<AuditRow>>(`/api/v2/audits${q ? `?${q}` : ''}`)
   return data
 }
 
 export async function fetchRoles(): Promise<RoleRow[]> {
   const { data } = await http.get<RoleRow[]>('/api/v2/roles')
+  return data
+}
+
+export async function fetchRolePermissions(roleId: number): Promise<RolePermissionsResponse> {
+  const { data } = await http.get<RolePermissionsResponse>(`/api/v2/roles/${roleId}/permissions`)
   return data
 }
 

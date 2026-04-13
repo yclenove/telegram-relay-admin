@@ -12,7 +12,10 @@ const statLabels: Record<string, string> = {
   events_total: '事件总数',
   events_sent: '已发送',
   events_failed: '发送失败',
+  events_last_24h: '近 24 小时事件',
   jobs_pending: '待发送任务',
+  jobs_failed: '失败任务（累计）',
+  jobs_failed_last_24h: '近 24 小时失败任务',
   bots_enabled: '启用中的机器人',
   rules_enabled: '启用中的规则',
 }

@@ -31,6 +31,8 @@ export type RuleRow = {
   priority: number
   match_source: string
   match_level: string
+  /** JSON 对象字符串，与后端 routing_rules.match_labels 一致 */
+  match_labels?: string
   destination_id: number
   is_enabled: boolean
 }
@@ -43,6 +45,35 @@ export type EventRow = {
   title?: string
   status: string
   created_at: string
+}
+
+/** 单条事件详情（含正文与原始负载） */
+export type EventDetailRow = EventRow & {
+  message?: string
+  labels?: string
+  raw_body?: string
+  updated_at?: string
+}
+
+/** 异步发送任务行 */
+export type DispatchJobRow = {
+  id: number
+  event_id: number
+  destination_id: number
+  status: string
+  attempt_count: number
+  max_attempts: number
+  last_error: string
+  next_attempt_at?: string | null
+  locked_at?: string | null
+  created_at: string
+  updated_at: string
+}
+
+/** GET /api/v2/roles/{id}/permissions 响应 */
+export type RolePermissionsResponse = {
+  role_id: number
+  permissions: string[]
 }
 
 export type AuditRow = {
