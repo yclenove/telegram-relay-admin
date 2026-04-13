@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
-import { ElMessage } from 'element-plus'
+import { computed, onMounted, reactive, ref } from 'vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import * as adminApi from '@/api/admin'
 import type { DestinationRow, RuleRow } from '@/api/types'
-import { getErrorMessage } from '@/utils/error'
+import { getErrorMessage, isMessageBoxUserDismiss } from '@/utils/error'
 
 const list = ref<RuleRow[]>([])
 const destinations = ref<DestinationRow[]>([])
@@ -15,6 +15,29 @@ const form = ref({
   match_level: '',
   destination_id: undefined as number | undefined,
 })
+
+const dialogVisible = ref(false)
+const editing = ref<RuleRow | null>(null)
+const editForm = reactive({
+  name: '',
+  priority: 100,
+  match_source: '',
+  match_level: '',
+  destination_id: undefined as number | undefined,
+  is_enabled: true,
+})
+
+const destMap = computed(() => {
+  const m = new Map<number, string>()
+  for (const d of destinations.value) {
+    m.set(d.id, `${d.name} (#${d.id})`)
+  }
+  return m
+})
+
+function destLabel(id: number) {
+  return destMap.value.get(id) ?? `#${id}`
+}
 
 async function load() {
   loading.value = true
@@ -51,6 +74,56 @@ async function onCreate() {
     }
     await load()
   } catch (e: unknown) {
+    ElMessage.error(getErrorMessage(e))
+  }
+}
+
+function openEdit(row: RuleRow) {
+  editing.value = row
+  editForm.name = row.name
+  editForm.priority = row.priority
+  editForm.match_source = row.match_source
+  editForm.match_level = row.match_level
+  editForm.destination_id = row.destination_id
+  editForm.is_enabled = row.is_enabled ?? true
+  dialogVisible.value = true
+}
+
+async function onSaveEdit() {
+  if (!editing.value) return
+  if (!editForm.name.trim()) {
+    ElMessage.warning('规则名不能为空')
+    return
+  }
+  if (editForm.destination_id == null) {
+    ElMessage.warning('请选择发送目标')
+    return
+  }
+  try {
+    await adminApi.patchRule(editing.value.id, {
+      name: editForm.name.trim(),
+      priority: editForm.priority,
+      match_source: editForm.match_source,
+      match_level: editForm.match_level,
+      destination_id: editForm.destination_id,
+      is_enabled: editForm.is_enabled,
+    })
+    ElMessage.success('已保存')
+    dialogVisible.value = false
+    await load()
+  } catch (e: unknown) {
+    ElMessage.error(getErrorMessage(e))
+  }
+}
+
+async function onDelete(row: RuleRow) {
+  try {
+    await ElMessageBox.confirm(`确定删除规则「${row.name}」？`, '确认', { type: 'warning' })
+    await adminApi.deleteRule(row.id)
+    ElMessage.success('已删除')
+    await load()
+  } catch (e: unknown) {
+    if (isMessageBoxUserDismiss(e)) return
     ElMessage.error(getErrorMessage(e))
   }
 }
@@ -102,9 +175,56 @@ onMounted(load)
       <el-table-column prop="priority" label="优先级" width="88" />
       <el-table-column prop="match_source" label="来源" />
       <el-table-column prop="match_level" label="级别" />
-      <el-table-column prop="destination_id" label="目标 ID" width="96" />
+      <el-table-column label="发送目标" min-width="160">
+        <template #default="{ row }">{{ destLabel(row.destination_id) }}</template>
+      </el-table-column>
+      <el-table-column prop="is_enabled" label="启用" width="88">
+        <template #default="{ row }">
+          <el-tag :type="row.is_enabled ? 'success' : 'info'" size="small">{{ row.is_enabled }}</el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column label="操作" width="160" fixed="right">
+        <template #default="{ row }">
+          <el-button type="primary" link @click="openEdit(row)">编辑</el-button>
+          <el-button type="danger" link @click="onDelete(row)">删除</el-button>
+        </template>
+      </el-table-column>
     </el-table>
     <el-button class="mt" @click="load">刷新</el-button>
+
+    <el-dialog v-model="dialogVisible" title="编辑路由规则" width="560px" destroy-on-close @closed="editing = null">
+      <el-form label-width="100px">
+        <el-form-item label="规则名">
+          <el-input v-model="editForm.name" />
+        </el-form-item>
+        <el-form-item label="优先级">
+          <el-input-number v-model="editForm.priority" :min="0" style="width: 100%" />
+        </el-form-item>
+        <el-form-item label="匹配来源">
+          <el-input v-model="editForm.match_source" placeholder="留空=全部" />
+        </el-form-item>
+        <el-form-item label="匹配级别">
+          <el-input v-model="editForm.match_level" placeholder="留空=全部" />
+        </el-form-item>
+        <el-form-item label="发送目标">
+          <el-select v-model="editForm.destination_id" placeholder="选择目标" style="width: 100%" filterable>
+            <el-option
+              v-for="d in destinations"
+              :key="d.id"
+              :label="`${d.name} (#${d.id}, ${d.bot_name || 'bot ' + d.bot_id})`"
+              :value="d.id"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="启用">
+          <el-switch v-model="editForm.is_enabled" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="dialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="onSaveEdit">保存</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 

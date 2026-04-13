@@ -37,6 +37,24 @@ export async function createBot(payload: {
   return data
 }
 
+export async function patchBot(
+  id: number,
+  payload: {
+    name?: string
+    remark?: string
+    is_enabled?: boolean
+    is_default?: boolean
+    bot_token?: string
+  },
+): Promise<BotRow> {
+  const { data } = await http.patch<BotRow>(`/api/v2/bots/${id}`, payload)
+  return data
+}
+
+export async function deleteBot(id: number): Promise<void> {
+  await http.delete(`/api/v2/bots/${id}`)
+}
+
 export async function fetchDestinations(): Promise<DestinationRow[]> {
   const { data } = await http.get<DestinationRow[]>('/api/v2/destinations')
   return data
@@ -66,6 +84,25 @@ export async function createRule(payload: {
 }): Promise<unknown> {
   const { data } = await http.post('/api/v2/rules', payload)
   return data
+}
+
+export async function patchRule(
+  id: number,
+  payload: {
+    name?: string
+    priority?: number
+    match_source?: string
+    match_level?: string
+    destination_id?: number
+    is_enabled?: boolean
+  },
+): Promise<RuleRow> {
+  const { data } = await http.patch<RuleRow>(`/api/v2/rules/${id}`, payload)
+  return data
+}
+
+export async function deleteRule(id: number): Promise<void> {
+  await http.delete(`/api/v2/rules/${id}`)
 }
 
 export async function fetchEvents(): Promise<EventRow[]> {

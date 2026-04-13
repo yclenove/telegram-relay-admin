@@ -26,6 +26,7 @@ export type RuleRow = {
   match_source: string
   match_level: string
   destination_id: number
+  is_enabled: boolean
 }
 
 export type EventRow = {
