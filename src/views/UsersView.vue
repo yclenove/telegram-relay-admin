@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import * as adminApi from '@/api/admin'
 import type { RoleRow, UserSummaryRow } from '@/api/types'
@@ -16,6 +16,22 @@ const form = reactive({
   is_enabled: true,
   role_ids: [] as number[],
 })
+
+const roleMap = computed(() => {
+  const m = new Map<number, string>()
+  for (const r of roles.value) {
+    m.set(r.id, `${r.name} (${r.code})`)
+  }
+  return m
+})
+
+/** 表格中展示可读角色名，避免只显示数字 ID */
+function formatRoleLabels(ids: number[]) {
+  if (!ids.length) return '—'
+  return ids
+    .map((id) => roleMap.value.get(id) ?? `#${id}`)
+    .join('、')
+}
 
 function openCreate() {
   editing.value = null
@@ -104,7 +120,7 @@ onMounted(load)
   <div>
     <el-card shadow="never" class="mb">
       <div class="toolbar">
-        <span class="hint">为用户分配角色（多选）；修改后需重新登录方可刷新 JWT 内权限。</span>
+        <span class="hint">为用户分配角色（多选）。保存后该用户需<strong>重新登录</strong>才会拿到新权限的 JWT。</span>
         <el-button type="primary" @click="openCreate">新增用户</el-button>
       </div>
     </el-card>
@@ -116,8 +132,8 @@ onMounted(load)
           <el-tag :type="row.is_enabled ? 'success' : 'info'" size="small">{{ row.is_enabled }}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="角色 ID" min-width="120">
-        <template #default="{ row }">{{ row.role_ids.join(', ') || '—' }}</template>
+      <el-table-column label="角色" min-width="200">
+        <template #default="{ row }">{{ formatRoleLabels(row.role_ids) }}</template>
       </el-table-column>
       <el-table-column label="操作" width="180" fixed="right">
         <template #default="{ row }">

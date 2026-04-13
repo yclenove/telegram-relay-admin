@@ -58,3 +58,10 @@ router.beforeEach((to): NavigationGuardReturn => {
   }
   return true
 })
+
+const appTitle = 'Telegram 网关管理台'
+// 同步浏览器标签标题，便于多标签页区分当前管理模块（登录页无 meta.title 时用「登录」）。
+router.afterEach((to) => {
+  const piece = (to.meta.title as string) || (to.meta.public ? '登录' : '')
+  document.title = piece ? `${piece} · ${appTitle}` : appTitle
+})
