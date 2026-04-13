@@ -30,3 +30,14 @@ npm run build
 1. 启动后端（需 PostgreSQL 等，见后端 README）。
 2. 本仓库 `npm run dev`，浏览器访问 Vite 提示的本地端口。
 3. 使用后端引导的管理员账号登录。
+
+## 首次推送到 GitHub
+
+若你已在 GitHub 创建空仓库（例如 `yclenove/telegram-relay-admin`），在本地执行：
+
+```bash
+git remote add origin https://github.com/yclenove/telegram-relay-admin.git
+git push -u origin main
+```
+
+（若已添加过 `origin`，只需 `git push -u origin main`。）
