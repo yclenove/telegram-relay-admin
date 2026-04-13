@@ -72,7 +72,11 @@ onMounted(load)
 
 <template>
   <div>
-    <el-card shadow="never" class="mb">
+    <header class="relay-section">
+      <h2 class="relay-page-title">事件中心</h2>
+      <p class="relay-page-desc">查看入站事件与送达状态；支持按来源、级别与状态筛选。</p>
+    </header>
+    <el-card shadow="never" class="relay-toolbar-card">
       <el-form :inline="true" label-width="72px">
         <el-form-item label="来源">
           <el-input v-model="filters.source" placeholder="精确匹配" clearable style="width: 140px" />
@@ -89,7 +93,8 @@ onMounted(load)
         </el-form-item>
       </el-form>
     </el-card>
-    <el-table v-loading="loading" :data="list" stripe border max-height="520">
+    <div class="relay-table-wrap">
+      <el-table v-loading="loading" :data="list" stripe border size="small" max-height="520">
       <el-table-column prop="id" label="ID" width="80" />
       <el-table-column prop="event_id" label="EventID" min-width="160" />
       <el-table-column prop="source" label="来源" width="100" />
@@ -103,7 +108,8 @@ onMounted(load)
         </template>
       </el-table-column>
     </el-table>
-    <div class="footer">
+    </div>
+    <div class="relay-actions-footer">
       <el-pagination
         v-model:current-page="page"
         v-model:page-size="pageSize"
@@ -143,16 +149,6 @@ onMounted(load)
 </template>
 
 <style scoped>
-.mb {
-  margin-bottom: var(--relay-space-md, 16px);
-}
-.footer {
-  margin-top: var(--relay-space-md, 16px);
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 16px;
-}
 .mono {
   margin: 0;
   white-space: pre-wrap;

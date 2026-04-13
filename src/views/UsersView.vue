@@ -118,13 +118,18 @@ onMounted(load)
 
 <template>
   <div>
-    <el-card shadow="never" class="mb">
+    <header class="relay-section">
+      <h2 class="relay-page-title">用户管理</h2>
+      <p class="relay-page-desc">创建后台账号并绑定角色；权限变更后需用户重新登录以刷新 JWT。</p>
+    </header>
+    <el-card shadow="never" class="relay-toolbar-card">
       <div class="toolbar">
         <span class="hint">为用户分配角色（多选）。保存后该用户需<strong>重新登录</strong>才会拿到新权限的 JWT。</span>
         <el-button type="primary" @click="openCreate">新增用户</el-button>
       </div>
     </el-card>
-    <el-table v-loading="loading" :data="list" stripe border>
+    <div class="relay-table-wrap">
+      <el-table v-loading="loading" :data="list" stripe border size="small">
       <el-table-column prop="id" label="ID" width="72" />
       <el-table-column prop="username" label="用户名" />
       <el-table-column prop="is_enabled" label="启用" width="88">
@@ -142,7 +147,10 @@ onMounted(load)
         </template>
       </el-table-column>
     </el-table>
-    <el-button class="mt" @click="load">刷新</el-button>
+    </div>
+    <div class="relay-actions-footer">
+      <el-button @click="load">刷新</el-button>
+    </div>
 
     <el-dialog v-model="dialogVisible" :title="editing ? '编辑用户' : '新增用户'" width="520px" destroy-on-close>
       <el-form label-width="100px">
@@ -171,9 +179,6 @@ onMounted(load)
 </template>
 
 <style scoped>
-.mb {
-  margin-bottom: var(--relay-space-md, 16px);
-}
 .toolbar {
   display: flex;
   justify-content: space-between;
@@ -184,9 +189,6 @@ onMounted(load)
 .hint {
   font-size: 13px;
   color: var(--el-text-color-secondary);
-}
-.mt {
-  margin-top: var(--relay-space-sm, 12px);
 }
 .sub {
   font-size: 12px;

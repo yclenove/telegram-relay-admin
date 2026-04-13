@@ -1,4 +1,4 @@
-/* 全局基础样式与设计 token，与 Element Plus 变量配合 */
+/* 全局基础样式与设计 token，与 Element Plus 变量配合；主应用壳与登录页形成层次对比。 */
 :root {
   --relay-space-xs: 6px;
   --relay-space-sm: 12px;
@@ -6,6 +6,22 @@
   --relay-space-lg: 24px;
   --relay-radius: 10px;
   --relay-content-max: 1280px;
+  /* 侧栏略深于主内容，形成纵向分区 */
+  --relay-sidebar-bg: var(--el-fill-color-light);
+  /* 顶栏与主区「卡片」承托面 */
+  --relay-main-surface: var(--el-bg-color);
+  /* 主内容区背景：极轻渐变，不抢表格阅读 */
+  --relay-page-bg: linear-gradient(
+    165deg,
+    var(--el-bg-color-page) 0%,
+    var(--el-fill-color-lighter) 45%,
+    var(--el-bg-color-page) 100%
+  );
+  --relay-header-height: 56px;
+  /* 指标卡左侧强调条（与 Element 语义色大致对齐） */
+  --relay-accent-events: var(--el-color-primary);
+  --relay-accent-jobs: var(--el-color-warning);
+  --relay-accent-config: var(--el-color-success);
 }
 
 body {
@@ -18,8 +34,56 @@ body {
   min-height: 100vh;
 }
 
-/* 内容区统一最大宽度，避免大屏表格拉得过散 */
+/* 内容区：最大宽度 + 垂直节奏，避免表格贴边 */
 .relay-page-inner {
   max-width: var(--relay-content-max);
   margin: 0 auto;
+  padding: var(--relay-space-md) var(--relay-space-sm);
+  min-height: calc(100vh - var(--relay-header-height) - var(--relay-space-lg));
+}
+
+/* 各业务页统一页标题 */
+.relay-page-title {
+  margin: 0 0 var(--relay-space-xs);
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--el-text-color-primary);
+  line-height: 1.3;
+}
+
+.relay-page-desc {
+  margin: 0 0 var(--relay-space-md);
+  font-size: 13px;
+  color: var(--el-text-color-secondary);
+  line-height: 1.5;
+}
+
+/* 区块与表格之间的垂直间距 */
+.relay-section {
+  margin-bottom: var(--relay-space-md);
+}
+
+/* 顶部筛选/新建表单所在卡片，与列表表格视觉分离 */
+.relay-toolbar-card {
+  border-radius: var(--relay-radius);
+  margin-bottom: var(--relay-space-md);
+}
+
+/* 全局样式中不使用 Vue 的 :deep；直接后代选择器即可命中 Element Plus 卡片结构 */
+.relay-toolbar-card .el-card__body {
+  padding-bottom: 8px;
+}
+
+/* 列表区域容器：与上方工具条留白 */
+.relay-table-wrap {
+  margin-top: 0;
+}
+
+.relay-actions-footer {
+  margin-top: var(--relay-space-md);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--relay-space-md);
 }

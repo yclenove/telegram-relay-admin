@@ -111,7 +111,11 @@ onMounted(load)
 
 <template>
   <div>
-    <el-card shadow="never" class="mb">
+    <header class="relay-section">
+      <h2 class="relay-page-title">发送目标</h2>
+      <p class="relay-page-desc">将告警路由到指定 Chat / Topic；需先选择已创建的机器人。</p>
+    </header>
+    <el-card shadow="never" class="relay-toolbar-card">
       <template #header>新建发送目标</template>
       <el-form :inline="true" label-width="100px">
         <el-form-item label="机器人">
@@ -136,7 +140,8 @@ onMounted(load)
         </el-form-item>
       </el-form>
     </el-card>
-    <el-table v-loading="loading" :data="list" stripe border>
+    <div class="relay-table-wrap">
+      <el-table v-loading="loading" :data="list" stripe border size="small">
       <el-table-column prop="id" label="ID" width="72" />
       <el-table-column prop="bot_name" label="机器人" min-width="120" />
       <el-table-column prop="name" label="名称" />
@@ -154,7 +159,10 @@ onMounted(load)
         </template>
       </el-table-column>
     </el-table>
-    <el-button class="mt" @click="load">刷新</el-button>
+    </div>
+    <div class="relay-actions-footer">
+      <el-button @click="load">刷新</el-button>
+    </div>
 
     <el-dialog v-model="dialogVisible" title="编辑发送目标" width="560px" destroy-on-close @closed="editing = null">
       <el-form label-width="108px">
@@ -189,12 +197,3 @@ onMounted(load)
     </el-dialog>
   </div>
 </template>
-
-<style scoped>
-.mb {
-  margin-bottom: var(--relay-space-md, 16px);
-}
-.mt {
-  margin-top: var(--relay-space-sm, 12px);
-}
-</style>

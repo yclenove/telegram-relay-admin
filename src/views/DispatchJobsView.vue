@@ -46,7 +46,11 @@ onMounted(load)
 
 <template>
   <div>
-    <el-card shadow="never" class="mb">
+    <header class="relay-section">
+      <h2 class="relay-page-title">发送任务</h2>
+      <p class="relay-page-desc">异步投递队列与重试状态；与事件中心配合排查失败原因。</p>
+    </header>
+    <el-card shadow="never" class="relay-toolbar-card">
       <el-form :inline="true" label-width="72px">
         <el-form-item label="状态">
           <el-input v-model="filters.status" placeholder="如 pending / sent / failed" clearable style="width: 200px" />
@@ -57,7 +61,8 @@ onMounted(load)
         </el-form-item>
       </el-form>
     </el-card>
-    <el-table v-loading="loading" :data="list" stripe border max-height="520">
+    <div class="relay-table-wrap">
+      <el-table v-loading="loading" :data="list" stripe border size="small" max-height="520">
       <el-table-column prop="id" label="任务 ID" width="96" />
       <el-table-column prop="event_id" label="事件 ID" width="96" />
       <el-table-column prop="destination_id" label="目标 ID" width="96" />
@@ -68,7 +73,8 @@ onMounted(load)
       <el-table-column prop="next_attempt_at" label="下次重试" min-width="160" />
       <el-table-column prop="created_at" label="创建时间" min-width="170" />
     </el-table>
-    <div class="footer">
+    </div>
+    <div class="relay-actions-footer">
       <el-pagination
         v-model:current-page="page"
         v-model:page-size="pageSize"
@@ -83,16 +89,3 @@ onMounted(load)
     </div>
   </div>
 </template>
-
-<style scoped>
-.mb {
-  margin-bottom: var(--relay-space-md, 16px);
-}
-.footer {
-  margin-top: var(--relay-space-md, 16px);
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 16px;
-}
-</style>

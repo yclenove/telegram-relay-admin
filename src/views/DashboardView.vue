@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { onMounted, ref } from 'vue'
+import { Bell, Cpu, List, Odometer } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import * as adminApi from '@/api/admin'
 import { getErrorMessage } from '@/utils/error'
@@ -7,7 +8,6 @@ import { getErrorMessage } from '@/utils/error'
 const stats = ref<Record<string, number>>({})
 const loading = ref(false)
 
-/** 将后端英文 key 转为可读中文，提升仪表盘信息密度 */
 const statLabels: Record<string, string> = {
   events_total: '事件总数',
   events_sent: '已发送',
@@ -20,16 +20,45 @@ const statLabels: Record<string, string> = {
   rules_enabled: '启用中的规则',
 }
 
-const orderedKeys = computed(() =>
-  Object.keys(stats.value).sort((a, b) => {
-    const order = Object.keys(statLabels)
-    return order.indexOf(a) - order.indexOf(b)
-  }),
-)
+/** 指标分组：与左侧色条变量对应，便于扫读。 */
+const statGroups: { title: string; desc: string; accent: string; keys: string[]; icon: 'events' | 'jobs' | 'config' }[] = [
+  {
+    title: '事件',
+    desc: '入站告警与送达状态概览',
+    accent: 'var(--relay-accent-events)',
+    keys: ['events_total', 'events_sent', 'events_failed', 'events_last_24h'],
+    icon: 'events',
+  },
+  {
+    title: '异步任务',
+    desc: '发送队列与失败重试相关',
+    accent: 'var(--relay-accent-jobs)',
+    keys: ['jobs_pending', 'jobs_failed', 'jobs_failed_last_24h'],
+    icon: 'jobs',
+  },
+  {
+    title: '配置',
+    desc: '机器人与路由规则启用数量',
+    accent: 'var(--relay-accent-config)',
+    keys: ['bots_enabled', 'rules_enabled'],
+    icon: 'config',
+  },
+]
 
 function labelFor(k: string) {
   return statLabels[k] ?? k
 }
+
+function statValue(k: string) {
+  return stats.value[k] ?? 0
+}
+
+/** 分组图标与侧栏菜单语义大致对应，便于运营同学快速扫读。 */
+const groupIcons = {
+  events: Bell,
+  jobs: List,
+  config: Cpu,
+} as const
 
 async function load() {
   loading.value = true
@@ -47,34 +76,91 @@ onMounted(load)
 
 <template>
   <div v-loading="loading">
-    <el-row :gutter="16">
-      <el-col v-for="k in orderedKeys" :key="k" :xs="24" :sm="12" :md="8" :lg="6">
-        <el-card shadow="hover" class="stat-card">
-          <div class="stat-label">{{ labelFor(k) }}</div>
-          <div class="stat-value">{{ stats[k] ?? 0 }}</div>
-        </el-card>
-      </el-col>
-    </el-row>
-    <el-button type="primary" link class="mt" @click="load">刷新</el-button>
+    <header class="relay-section">
+      <h2 class="relay-page-title">仪表盘</h2>
+      <p class="relay-page-desc">关键运行指标一览；数据来自后端实时统计，可点击刷新更新。</p>
+    </header>
+
+    <section v-for="group in statGroups" :key="group.title" class="relay-section stat-group">
+      <div class="group-head">
+        <el-icon class="group-ico" :size="20" :style="{ color: group.accent }">
+          <component :is="groupIcons[group.icon]" />
+        </el-icon>
+        <div>
+          <div class="group-title">{{ group.title }}</div>
+          <el-text size="small" type="info">{{ group.desc }}</el-text>
+        </div>
+      </div>
+      <el-row :gutter="16">
+        <el-col v-for="k in group.keys" :key="k" :xs="24" :sm="12" :md="8" :lg="6">
+          <el-card shadow="hover" class="stat-card" :style="{ '--stat-accent': group.accent }">
+            <div class="stat-inner">
+              <div class="stat-label">{{ labelFor(k) }}</div>
+              <div class="stat-value">{{ statValue(k) }}</div>
+            </div>
+          </el-card>
+        </el-col>
+      </el-row>
+    </section>
+
+    <div class="relay-actions-footer">
+      <el-button type="primary" @click="load">
+        <el-icon class="btn-ico"><Odometer /></el-icon>
+        刷新数据
+      </el-button>
+    </div>
   </div>
 </template>
 
 <style scoped>
+.stat-group .group-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: var(--relay-space-sm);
+}
+.group-ico {
+  margin-top: 2px;
+}
+.group-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--el-text-color-primary);
+  margin-bottom: 2px;
+}
 .stat-card {
-  border-radius: var(--relay-radius, 10px);
-  margin-bottom: var(--relay-space-sm, 12px);
+  border-radius: var(--relay-radius);
+  margin-bottom: var(--relay-space-sm);
+  overflow: hidden;
+  border: 1px solid var(--el-border-color-lighter);
+}
+.stat-inner {
+  position: relative;
+  padding-left: 12px;
+}
+.stat-inner::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  border-radius: 2px;
+  background: var(--stat-accent, var(--el-color-primary));
 }
 .stat-label {
   font-size: 13px;
   color: var(--el-text-color-secondary);
 }
 .stat-value {
-  font-size: 28px;
+  font-size: 26px;
   font-weight: 600;
-  margin-top: 8px;
+  margin-top: 6px;
   letter-spacing: -0.02em;
+  color: var(--el-text-color-primary);
 }
-.mt {
-  margin-top: var(--relay-space-sm, 12px);
+.btn-ico {
+  margin-right: 6px;
+  vertical-align: middle;
 }
 </style>

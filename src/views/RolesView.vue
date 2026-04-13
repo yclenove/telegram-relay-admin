@@ -44,14 +44,20 @@ onMounted(load)
 
 <template>
   <div>
-    <el-alert
-      class="mb"
-      type="info"
-      show-icon
-      :closable="false"
-      title="角色与权限为只读展示；变更权限码请在数据库或后续「角色管理」能力中配置。"
-    />
-    <el-table v-loading="loading" :data="list" stripe border>
+    <header class="relay-section">
+      <h2 class="relay-page-title">角色与权限</h2>
+      <p class="relay-page-desc">查看系统角色定义；权限码列表为只读，便于对照 JWT 与接口鉴权。</p>
+    </header>
+    <el-card shadow="never" class="relay-toolbar-card">
+      <el-alert
+        type="info"
+        show-icon
+        :closable="false"
+        title="角色与权限为只读展示；变更权限码请在数据库或后续「角色管理」能力中配置。"
+      />
+    </el-card>
+    <div class="relay-table-wrap">
+      <el-table v-loading="loading" :data="list" stripe border size="small">
       <el-table-column prop="id" label="ID" width="72" />
       <el-table-column prop="code" label="代码" width="160" />
       <el-table-column prop="name" label="名称" />
@@ -61,7 +67,10 @@ onMounted(load)
         </template>
       </el-table-column>
     </el-table>
-    <el-button class="mt" @click="load">刷新</el-button>
+    </div>
+    <div class="relay-actions-footer">
+      <el-button @click="load">刷新</el-button>
+    </div>
 
     <el-drawer v-model="drawerVisible" :title="`权限：${drawerTitle}`" size="400px">
       <el-skeleton v-if="permLoading" :rows="6" animated />
@@ -76,12 +85,6 @@ onMounted(load)
 </template>
 
 <style scoped>
-.mb {
-  margin-bottom: var(--relay-space-md, 16px);
-}
-.mt {
-  margin-top: var(--relay-space-sm, 12px);
-}
 .perm-ul {
   margin: 0;
   padding-left: 20px;

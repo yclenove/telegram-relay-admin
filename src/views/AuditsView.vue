@@ -69,7 +69,11 @@ onMounted(load)
 
 <template>
   <div>
-    <el-card shadow="never" class="mb">
+    <header class="relay-section">
+      <h2 class="relay-page-title">审计日志</h2>
+      <p class="relay-page-desc">追踪管理台关键操作；可按动作、对象与时间范围检索。</p>
+    </header>
+    <el-card shadow="never" class="relay-toolbar-card">
       <el-form :inline="true" label-width="88px">
         <el-form-item label="动作">
           <el-input v-model="filters.action" placeholder="如 bot.update" clearable style="width: 160px" />
@@ -95,7 +99,8 @@ onMounted(load)
         </el-form-item>
       </el-form>
     </el-card>
-    <el-table v-loading="loading" :data="list" stripe border max-height="520">
+    <div class="relay-table-wrap">
+      <el-table v-loading="loading" :data="list" stripe border size="small" max-height="520">
       <el-table-column prop="id" label="ID" width="80" />
       <el-table-column prop="actor_user_id" label="操作人" width="96" />
       <el-table-column prop="action" label="动作" width="140" />
@@ -104,7 +109,8 @@ onMounted(load)
       <el-table-column prop="detail" label="详情" min-width="200" show-overflow-tooltip />
       <el-table-column prop="created_at" label="时间" min-width="180" />
     </el-table>
-    <div class="footer">
+    </div>
+    <div class="relay-actions-footer">
       <el-pagination
         v-model:current-page="page"
         v-model:page-size="pageSize"
@@ -119,16 +125,3 @@ onMounted(load)
     </div>
   </div>
 </template>
-
-<style scoped>
-.mb {
-  margin-bottom: var(--relay-space-md, 16px);
-}
-.footer {
-  margin-top: var(--relay-space-md, 16px);
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 16px;
-}
-</style>

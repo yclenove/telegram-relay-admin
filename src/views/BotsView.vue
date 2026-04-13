@@ -98,7 +98,11 @@ onMounted(load)
 
 <template>
   <div>
-    <el-card shadow="never" class="mb">
+    <header class="relay-section">
+      <h2 class="relay-page-title">机器人</h2>
+      <p class="relay-page-desc">管理 Telegram Bot 凭据与默认实例；创建后可在「发送目标」中绑定 Chat。</p>
+    </header>
+    <el-card shadow="never" class="relay-toolbar-card">
       <el-form :inline="true" label-width="100px">
         <el-form-item label="名称"><el-input v-model="createForm.name" placeholder="机器人名称" /></el-form-item>
         <el-form-item label="Bot Token">
@@ -109,7 +113,8 @@ onMounted(load)
         <el-form-item><el-button type="primary" @click="onCreate">创建</el-button></el-form-item>
       </el-form>
     </el-card>
-    <el-table v-loading="loading" :data="list" stripe border>
+    <div class="relay-table-wrap">
+      <el-table v-loading="loading" :data="list" stripe border size="small">
       <el-table-column prop="id" label="ID" width="80" />
       <el-table-column prop="name" label="名称" />
       <el-table-column prop="is_default" label="默认" width="80">
@@ -130,7 +135,10 @@ onMounted(load)
         </template>
       </el-table-column>
     </el-table>
-    <el-button style="margin-top: 12px" @click="load">刷新</el-button>
+    </div>
+    <div class="relay-actions-footer">
+      <el-button @click="load">刷新</el-button>
+    </div>
 
     <el-dialog v-model="dialogVisible" title="编辑机器人" width="520px" destroy-on-close @closed="editing = null">
       <el-form label-width="108px">
@@ -160,9 +168,6 @@ onMounted(load)
 </template>
 
 <style scoped>
-.mb {
-  margin-bottom: 16px;
-}
 .sub {
   font-size: 12px;
   color: var(--el-text-color-secondary);
