@@ -1,5 +1,11 @@
 /** 与后端 /api/v2 返回结构对齐的轻量类型定义。 */
 
+/** 管理端分页列表通用结构（事件、审计等）。 */
+export type Paged<T> = {
+  items: T[]
+  total: number
+}
+
 export type BotRow = {
   id: number
   name: string
@@ -34,6 +40,7 @@ export type EventRow = {
   event_id: string
   source: string
   level: string
+  title?: string
   status: string
   created_at: string
 }

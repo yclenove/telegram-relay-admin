@@ -5,6 +5,7 @@ import type {
   DestinationRow,
   EventRow,
   LoginResult,
+  Paged,
   RoleRow,
   RuleRow,
   UserSummaryRow,
@@ -70,6 +71,25 @@ export async function createDestination(payload: {
   return data
 }
 
+export async function patchDestination(
+  id: number,
+  payload: {
+    bot_id?: number
+    name?: string
+    chat_id?: string
+    topic_id?: string
+    parse_mode?: string
+    is_enabled?: boolean
+  },
+): Promise<DestinationRow> {
+  const { data } = await http.patch<DestinationRow>(`/api/v2/destinations/${id}`, payload)
+  return data
+}
+
+export async function deleteDestination(id: number): Promise<void> {
+  await http.delete(`/api/v2/destinations/${id}`)
+}
+
 export async function fetchRules(): Promise<RuleRow[]> {
   const { data } = await http.get<RuleRow[]>('/api/v2/rules')
   return data
@@ -105,13 +125,37 @@ export async function deleteRule(id: number): Promise<void> {
   await http.delete(`/api/v2/rules/${id}`)
 }
 
-export async function fetchEvents(): Promise<EventRow[]> {
-  const { data } = await http.get<EventRow[]>('/api/v2/events')
+export async function fetchEvents(params?: {
+  limit?: number
+  offset?: number
+  source?: string
+  level?: string
+  status?: string
+}): Promise<Paged<EventRow>> {
+  const sp = new URLSearchParams()
+  if (params?.limit != null) sp.set('limit', String(params.limit))
+  if (params?.offset != null) sp.set('offset', String(params.offset))
+  if (params?.source) sp.set('source', params.source)
+  if (params?.level) sp.set('level', params.level)
+  if (params?.status) sp.set('status', params.status)
+  const q = sp.toString()
+  const { data } = await http.get<Paged<EventRow>>(`/api/v2/events${q ? `?${q}` : ''}`)
   return data
 }
 
-export async function fetchAudits(): Promise<AuditRow[]> {
-  const { data } = await http.get<AuditRow[]>('/api/v2/audits')
+export async function fetchAudits(params?: {
+  limit?: number
+  offset?: number
+  action?: string
+  object_type?: string
+}): Promise<Paged<AuditRow>> {
+  const sp = new URLSearchParams()
+  if (params?.limit != null) sp.set('limit', String(params.limit))
+  if (params?.offset != null) sp.set('offset', String(params.offset))
+  if (params?.action) sp.set('action', params.action)
+  if (params?.object_type) sp.set('object_type', params.object_type)
+  const q = sp.toString()
+  const { data } = await http.get<Paged<AuditRow>>(`/api/v2/audits${q ? `?${q}` : ''}`)
   return data
 }
 
