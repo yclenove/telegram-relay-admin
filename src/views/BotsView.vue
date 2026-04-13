@@ -9,6 +9,8 @@ const list = ref<BotRow[]>([])
 const loading = ref(false)
 const createForm = ref({ name: '', bot_token: '', remark: '', is_default: false })
 
+/** 新建独立弹窗：避免大表单压在表格上方，首屏以列表为主。 */
+const createDialogVisible = ref(false)
 const dialogVisible = ref(false)
 const editing = ref<BotRow | null>(null)
 const editForm = reactive({
@@ -30,6 +32,11 @@ async function load() {
   }
 }
 
+function openCreateDialog() {
+  createForm.value = { name: '', bot_token: '', remark: '', is_default: false }
+  createDialogVisible.value = true
+}
+
 async function onCreate() {
   if (!createForm.value.name || !createForm.value.bot_token) {
     ElMessage.warning('请填写名称与 Bot Token')
@@ -39,6 +46,7 @@ async function onCreate() {
     await adminApi.createBot(createForm.value)
     ElMessage.success('已创建')
     createForm.value = { name: '', bot_token: '', remark: '', is_default: false }
+    createDialogVisible.value = false
     await load()
   } catch (e: unknown) {
     ElMessage.error(getErrorMessage(e))
@@ -103,15 +111,10 @@ onMounted(load)
       <p class="relay-page-desc">管理 Telegram Bot 凭据与默认实例；创建后可在「发送目标」中绑定 Chat。</p>
     </header>
     <el-card shadow="never" class="relay-toolbar-card">
-      <el-form :inline="true" label-width="100px">
-        <el-form-item label="名称"><el-input v-model="createForm.name" placeholder="机器人名称" /></el-form-item>
-        <el-form-item label="Bot Token">
-          <el-input v-model="createForm.bot_token" placeholder="从 BotFather 获取" show-password />
-        </el-form-item>
-        <el-form-item label="备注"><el-input v-model="createForm.remark" /></el-form-item>
-        <el-form-item label="默认"><el-switch v-model="createForm.is_default" /></el-form-item>
-        <el-form-item><el-button type="primary" @click="onCreate">创建</el-button></el-form-item>
-      </el-form>
+      <div class="relay-toolbar-actions">
+        <el-text size="small" type="info">列表不含 Token 明文；新建请使用下方按钮打开表单。</el-text>
+        <el-button type="primary" @click="openCreateDialog">新建机器人</el-button>
+      </div>
     </el-card>
     <div class="relay-table-wrap">
       <el-table v-loading="loading" :data="list" stripe border size="small">
@@ -139,6 +142,27 @@ onMounted(load)
     <div class="relay-actions-footer">
       <el-button @click="load">刷新</el-button>
     </div>
+
+    <el-dialog v-model="createDialogVisible" title="新建机器人" width="520px" destroy-on-close>
+      <el-form label-width="108px" @submit.prevent>
+        <el-form-item label="名称">
+          <el-input v-model="createForm.name" placeholder="机器人名称" autocomplete="off" />
+        </el-form-item>
+        <el-form-item label="Bot Token">
+          <el-input v-model="createForm.bot_token" placeholder="从 BotFather 获取" show-password autocomplete="off" />
+        </el-form-item>
+        <el-form-item label="备注">
+          <el-input v-model="createForm.remark" />
+        </el-form-item>
+        <el-form-item label="默认">
+          <el-switch v-model="createForm.is_default" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="createDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="onCreate">创建</el-button>
+      </template>
+    </el-dialog>
 
     <el-dialog v-model="dialogVisible" title="编辑机器人" width="520px" destroy-on-close @closed="editing = null">
       <el-form label-width="108px">

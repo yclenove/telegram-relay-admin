@@ -75,15 +75,44 @@ body {
   padding-bottom: 8px;
 }
 
-/* 列表区域容器：与上方工具条留白 */
-.relay-table-wrap {
-  margin-top: 0;
-}
-
 .relay-actions-footer {
   margin-top: var(--relay-space-md);
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: var(--relay-space-md);
+}
+
+/* 工具条一行：左侧说明 + 右侧主操作（新建等），避免大表单压在表格上方。 */
+.relay-toolbar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--relay-space-md);
+}
+
+/* 列表区域：与工具条分离；卡片化圆角阴影 + 表头底纹，比裸表格更易读。 */
+.relay-table-wrap {
+  margin-top: 0;
+  background: var(--el-bg-color);
+  border: 1px solid var(--el-border-color-lighter);
+  border-radius: var(--relay-radius);
+  box-shadow: var(--el-box-shadow-lighter);
+  overflow: hidden;
+}
+
+.relay-table-wrap .el-table {
+  --el-table-border-color: var(--el-border-color-lighter);
+}
+
+.relay-table-wrap .el-table thead th.el-table__cell {
+  background-color: var(--el-fill-color-light) !important;
+  color: var(--el-text-color-primary);
+  font-weight: 600;
+}
+
+.relay-table-wrap .el-table .el-table__cell {
+  padding-top: 10px;
+  padding-bottom: 10px;
 }

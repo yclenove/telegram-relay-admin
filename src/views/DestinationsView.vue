@@ -10,6 +10,8 @@ const bots = ref<BotRow[]>([])
 const loading = ref(false)
 const createForm = ref({ bot_id: 0, name: '', chat_id: '', parse_mode: 'HTML' })
 
+/** 新建走弹窗，表格区保持干净，避免与「发送目标」长表单抢首屏。 */
+const createDialogVisible = ref(false)
 const dialogVisible = ref(false)
 const editing = ref<DestinationRow | null>(null)
 const editForm = reactive({
@@ -36,6 +38,16 @@ async function load() {
   }
 }
 
+function openCreateDialog() {
+  createForm.value = {
+    bot_id: bots.value[0]?.id ?? 0,
+    name: '',
+    chat_id: '',
+    parse_mode: 'HTML',
+  }
+  createDialogVisible.value = true
+}
+
 async function onCreate() {
   if (!createForm.value.bot_id || !createForm.value.name || !createForm.value.chat_id) {
     ElMessage.warning('请选择机器人并填写名称与 Chat ID')
@@ -50,6 +62,7 @@ async function onCreate() {
     })
     ElMessage.success('已创建')
     createForm.value = { bot_id: bots.value[0]?.id ?? 0, name: '', chat_id: '', parse_mode: 'HTML' }
+    createDialogVisible.value = false
     await load()
   } catch (e: unknown) {
     ElMessage.error(getErrorMessage(e))
@@ -116,29 +129,10 @@ onMounted(load)
       <p class="relay-page-desc">将告警路由到指定 Chat / Topic；需先选择已创建的机器人。</p>
     </header>
     <el-card shadow="never" class="relay-toolbar-card">
-      <template #header>新建发送目标</template>
-      <el-form :inline="true" label-width="100px">
-        <el-form-item label="机器人">
-          <el-select v-model="createForm.bot_id" placeholder="选择" style="width: 200px" filterable>
-            <el-option v-for="b in bots" :key="b.id" :label="b.name" :value="b.id" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="名称">
-          <el-input v-model="createForm.name" placeholder="如 prod-alerts" />
-        </el-form-item>
-        <el-form-item label="Chat ID">
-          <el-input v-model="createForm.chat_id" placeholder="-100..." />
-        </el-form-item>
-        <el-form-item label="ParseMode">
-          <el-select v-model="createForm.parse_mode" style="width: 120px">
-            <el-option label="HTML" value="HTML" />
-            <el-option label="Markdown" value="Markdown" />
-          </el-select>
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" @click="onCreate">创建</el-button>
-        </el-form-item>
-      </el-form>
+      <div class="relay-toolbar-actions">
+        <el-text size="small" type="info">先维护「机器人」，再在此绑定 Chat；新建使用右侧按钮。</el-text>
+        <el-button type="primary" @click="openCreateDialog">新建发送目标</el-button>
+      </div>
     </el-card>
     <div class="relay-table-wrap">
       <el-table v-loading="loading" :data="list" stripe border size="small">
@@ -163,6 +157,32 @@ onMounted(load)
     <div class="relay-actions-footer">
       <el-button @click="load">刷新</el-button>
     </div>
+
+    <el-dialog v-model="createDialogVisible" title="新建发送目标" width="560px" destroy-on-close>
+      <el-form label-width="108px" @submit.prevent>
+        <el-form-item label="机器人">
+          <el-select v-model="createForm.bot_id" placeholder="选择" style="width: 100%" filterable>
+            <el-option v-for="b in bots" :key="b.id" :label="b.name" :value="b.id" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="名称">
+          <el-input v-model="createForm.name" placeholder="如 prod-alerts" />
+        </el-form-item>
+        <el-form-item label="Chat ID">
+          <el-input v-model="createForm.chat_id" placeholder="-100..." />
+        </el-form-item>
+        <el-form-item label="ParseMode">
+          <el-select v-model="createForm.parse_mode" style="width: 100%">
+            <el-option label="HTML" value="HTML" />
+            <el-option label="Markdown" value="Markdown" />
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="createDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="onCreate">创建</el-button>
+      </template>
+    </el-dialog>
 
     <el-dialog v-model="dialogVisible" title="编辑发送目标" width="560px" destroy-on-close @closed="editing = null">
       <el-form label-width="108px">

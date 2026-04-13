@@ -97,7 +97,7 @@ function canSee(item: MenuItem) {
         <div class="right">
           <!-- 权限码较多时用 Popover 承载全文，顶栏只显示数量，避免挤占标题区。 -->
           <el-popover
-            v-if="auth.permissions.length"
+            v-if="(auth.permissions ?? []).length"
             placement="bottom-end"
             :width="360"
             trigger="click"

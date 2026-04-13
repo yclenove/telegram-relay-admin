@@ -17,6 +17,8 @@ const form = ref({
   destination_id: undefined as number | undefined,
 })
 
+/** 新建规则用弹窗承载长表单，列表页只保留表格与刷新。 */
+const createDialogVisible = ref(false)
 const dialogVisible = ref(false)
 const editing = ref<RuleRow | null>(null)
 const editForm = reactive({
@@ -53,6 +55,18 @@ async function load() {
   }
 }
 
+function openCreateDialog() {
+  form.value = {
+    name: '',
+    priority: 100,
+    match_source: '',
+    match_level: '',
+    match_labels: '{}',
+    destination_id: undefined,
+  }
+  createDialogVisible.value = true
+}
+
 async function onCreate() {
   if (!form.value.name || !form.value.destination_id) {
     ElMessage.warning('请填写规则名并选择发送目标')
@@ -77,6 +91,7 @@ async function onCreate() {
       match_labels: '{}',
       destination_id: undefined,
     }
+    createDialogVisible.value = false
     await load()
   } catch (e: unknown) {
     if (e instanceof SyntaxError) {
@@ -154,49 +169,10 @@ onMounted(load)
       <p class="relay-page-desc">按来源、级别与 Labels 将事件匹配到发送目标；数字优先级越大越优先。</p>
     </header>
     <el-card shadow="never" class="relay-toolbar-card">
-      <template #header>新建路由规则</template>
-      <el-form :inline="true" label-width="100px">
-        <el-form-item label="规则名">
-          <el-input v-model="form.name" placeholder="唯一名称" />
-        </el-form-item>
-        <el-form-item label="优先级">
-          <el-input-number v-model="form.priority" :min="0" />
-        </el-form-item>
-        <el-form-item label="匹配来源">
-          <el-input v-model="form.match_source" placeholder="留空=全部" />
-        </el-form-item>
-        <el-form-item label="匹配级别">
-          <el-input v-model="form.match_level" placeholder="留空=全部" />
-        </el-form-item>
-        <el-form-item label="Labels">
-          <el-input
-            v-model="form.match_labels"
-            type="textarea"
-            :rows="2"
-            placeholder='JSON 对象，如 {} 或 {"team":"ops"}'
-            style="width: 360px"
-          />
-        </el-form-item>
-        <el-form-item label="发送目标">
-          <el-select
-            v-model="form.destination_id"
-            placeholder="选择目标"
-            style="width: 280px"
-            filterable
-            clearable
-          >
-            <el-option
-              v-for="d in destinations"
-              :key="d.id"
-              :label="`${d.name} (#${d.id}, ${d.bot_name || 'bot ' + d.bot_id})`"
-              :value="d.id"
-            />
-          </el-select>
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" @click="onCreate">创建</el-button>
-        </el-form-item>
-      </el-form>
+      <div class="relay-toolbar-actions">
+        <el-text size="small" type="info">规则按优先级匹配；新建请点右侧按钮，避免长表单遮挡表格。</el-text>
+        <el-button type="primary" @click="openCreateDialog">新建路由规则</el-button>
+      </div>
     </el-card>
     <div class="relay-table-wrap">
       <el-table v-loading="loading" :data="list" stripe border size="small">
@@ -227,6 +203,45 @@ onMounted(load)
     <div class="relay-actions-footer">
       <el-button @click="load">刷新</el-button>
     </div>
+
+    <el-dialog v-model="createDialogVisible" title="新建路由规则" width="600px" destroy-on-close>
+      <el-form label-width="100px" @submit.prevent>
+        <el-form-item label="规则名">
+          <el-input v-model="form.name" placeholder="唯一名称" />
+        </el-form-item>
+        <el-form-item label="优先级">
+          <el-input-number v-model="form.priority" :min="0" style="width: 100%" />
+        </el-form-item>
+        <el-form-item label="匹配来源">
+          <el-input v-model="form.match_source" placeholder="留空=全部" />
+        </el-form-item>
+        <el-form-item label="匹配级别">
+          <el-input v-model="form.match_level" placeholder="留空=全部" />
+        </el-form-item>
+        <el-form-item label="Labels">
+          <el-input
+            v-model="form.match_labels"
+            type="textarea"
+            :rows="3"
+            placeholder='JSON 对象，如 {} 或 {"team":"ops"}'
+          />
+        </el-form-item>
+        <el-form-item label="发送目标">
+          <el-select v-model="form.destination_id" placeholder="选择目标" style="width: 100%" filterable clearable>
+            <el-option
+              v-for="d in destinations"
+              :key="d.id"
+              :label="`${d.name} (#${d.id}, ${d.bot_name || 'bot ' + d.bot_id})`"
+              :value="d.id"
+            />
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="createDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="onCreate">创建</el-button>
+      </template>
+    </el-dialog>
 
     <el-dialog v-model="dialogVisible" title="编辑路由规则" width="560px" destroy-on-close @closed="editing = null">
       <el-form label-width="100px">

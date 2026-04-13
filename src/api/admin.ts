@@ -15,11 +15,27 @@ import type {
 } from './types'
 import { buildAuditsQueryParams, buildDispatchJobsQueryParams, buildEventsQueryParams } from '@/utils/buildListQuery'
 
+/** 后端若返回 JSON null，表格/下拉会读 .length 报错，统一兜底为空数组。 */
+function ensureArray<T>(data: T[] | null | undefined): T[] {
+  return Array.isArray(data) ? data : []
+}
+
+function ensurePaged<T>(data: Paged<T> | null | undefined): Paged<T> {
+  if (!data || typeof data !== 'object') return { items: [], total: 0 }
+  return {
+    items: Array.isArray(data.items) ? data.items : [],
+    total: typeof data.total === 'number' ? data.total : 0,
+  }
+}
+
 /** 封装管理端 REST 调用，页面只关心业务方法名与类型。 */
 
 export async function login(username: string, password: string): Promise<LoginResult> {
   const { data } = await http.post<LoginResult>('/api/v2/auth/login', { username, password })
-  return data
+  return {
+    ...data,
+    permissions: ensureArray(data?.permissions),
+  }
 }
 
 export async function fetchDashboard(): Promise<Record<string, number>> {
@@ -29,7 +45,7 @@ export async function fetchDashboard(): Promise<Record<string, number>> {
 
 export async function fetchBots(): Promise<BotRow[]> {
   const { data } = await http.get<BotRow[]>('/api/v2/bots')
-  return data
+  return ensureArray(data)
 }
 
 export async function createBot(payload: {
@@ -62,7 +78,7 @@ export async function deleteBot(id: number): Promise<void> {
 
 export async function fetchDestinations(): Promise<DestinationRow[]> {
   const { data } = await http.get<DestinationRow[]>('/api/v2/destinations')
-  return data
+  return ensureArray(data)
 }
 
 export async function createDestination(payload: {
@@ -96,7 +112,7 @@ export async function deleteDestination(id: number): Promise<void> {
 
 export async function fetchRules(): Promise<RuleRow[]> {
   const { data } = await http.get<RuleRow[]>('/api/v2/rules')
-  return data
+  return ensureArray(data)
 }
 
 export async function createRule(payload: {
@@ -140,7 +156,7 @@ export async function fetchEvents(params?: {
 }): Promise<Paged<EventRow>> {
   const q = buildEventsQueryParams(params ?? {})
   const { data } = await http.get<Paged<EventRow>>(`/api/v2/events${q ? `?${q}` : ''}`)
-  return data
+  return ensurePaged(data)
 }
 
 export async function fetchEvent(id: number): Promise<EventDetailRow> {
@@ -155,7 +171,7 @@ export async function fetchDispatchJobs(params?: {
 }): Promise<Paged<DispatchJobRow>> {
   const q = buildDispatchJobsQueryParams(params ?? {})
   const { data } = await http.get<Paged<DispatchJobRow>>(`/api/v2/dispatch-jobs${q ? `?${q}` : ''}`)
-  return data
+  return ensurePaged(data)
 }
 
 export async function fetchAudits(params?: {
@@ -170,22 +186,23 @@ export async function fetchAudits(params?: {
 }): Promise<Paged<AuditRow>> {
   const q = buildAuditsQueryParams(params ?? {})
   const { data } = await http.get<Paged<AuditRow>>(`/api/v2/audits${q ? `?${q}` : ''}`)
-  return data
+  return ensurePaged(data)
 }
 
 export async function fetchRoles(): Promise<RoleRow[]> {
   const { data } = await http.get<RoleRow[]>('/api/v2/roles')
-  return data
+  return ensureArray(data)
 }
 
 export async function fetchRolePermissions(roleId: number): Promise<RolePermissionsResponse> {
   const { data } = await http.get<RolePermissionsResponse>(`/api/v2/roles/${roleId}/permissions`)
-  return data
+  if (!data) return { role_id: roleId, permissions: [] }
+  return { ...data, permissions: ensureArray(data.permissions) }
 }
 
 export async function fetchUsers(): Promise<UserSummaryRow[]> {
   const { data } = await http.get<UserSummaryRow[]>('/api/v2/users')
-  return data
+  return ensureArray(data)
 }
 
 export async function createUser(payload: {
