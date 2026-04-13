@@ -66,6 +66,9 @@ onMounted(load)
           <el-button type="primary" link @click="openPermissions(row)">权限列表</el-button>
         </template>
       </el-table-column>
+      <template #empty>
+        <el-empty description="暂无角色数据：一般由迁移/引导数据写入，若为空请检查数据库" :image-size="72" />
+      </template>
     </el-table>
     </div>
     <div class="relay-actions-footer">

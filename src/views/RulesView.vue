@@ -198,6 +198,11 @@ onMounted(load)
           <el-button type="danger" link @click="onDelete(row)">删除</el-button>
         </template>
       </el-table-column>
+      <template #empty>
+        <el-empty description="暂无路由规则：事件需经规则匹配后才能投递到目标" :image-size="72">
+          <el-button type="primary" @click="openCreateDialog">新建路由规则</el-button>
+        </el-empty>
+      </template>
     </el-table>
     </div>
     <div class="relay-actions-footer">

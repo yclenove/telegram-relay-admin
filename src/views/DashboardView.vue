@@ -67,6 +67,23 @@ const groupIcons = {
   config: Cpu,
 } as const
 
+type StatGroupDef = (typeof statGroups)[number]
+
+/** 该组指标是否全为 0：用于展示「冷启动」说明，避免误以为接口坏了。 */
+function groupAllZero(group: StatGroupDef) {
+  return group.keys.every((k) => statValue(k) === 0)
+}
+
+function zeroHintFor(group: StatGroupDef) {
+  if (group.icon === 'events') {
+    return '尚无入站事件：上游需调用 notify 写入告警后，此处才会累计；全为 0 属正常冷启动状态。'
+  }
+  if (group.icon === 'jobs') {
+    return '尚无投递任务：事件经路由规则匹配并生成发送任务后才会出现；可与「事件中心」对照排查。'
+  }
+  return '启用中的机器人/规则数量为当前配置快照；若均为 0，请先到对应菜单创建并打开启用开关。'
+}
+
 async function load() {
   loading.value = true
   try {
@@ -115,6 +132,9 @@ onMounted(load)
             </el-card>
           </el-col>
         </el-row>
+        <div v-if="groupAllZero(group)" class="group-zero-hint">
+          <el-text size="small" type="info">{{ zeroHintFor(group) }}</el-text>
+        </div>
       </section>
 
       <div class="dashboard-footer">
@@ -236,6 +256,15 @@ onMounted(load)
   line-height: 1.1;
   color: var(--el-text-color-primary);
   font-variant-numeric: tabular-nums;
+}
+
+.group-zero-hint {
+  margin-top: var(--relay-space-sm);
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--el-fill-color-light);
+  border: 1px dashed var(--el-border-color);
+  line-height: 1.55;
 }
 
 .dashboard-footer {

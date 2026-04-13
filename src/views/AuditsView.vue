@@ -108,6 +108,11 @@ onMounted(load)
       <el-table-column prop="object_id" label="对象 ID" width="100" />
       <el-table-column prop="detail" label="详情" min-width="200" show-overflow-tooltip />
       <el-table-column prop="created_at" label="时间" min-width="180" />
+      <template #empty>
+        <el-empty description="暂无审计记录：管理操作写入后才会出现，或当前筛选无匹配" :image-size="72">
+          <el-button @click="onResetFilters">重置筛选</el-button>
+        </el-empty>
+      </template>
     </el-table>
     </div>
     <div class="relay-actions-footer">

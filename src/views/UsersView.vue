@@ -146,6 +146,11 @@ onMounted(load)
           <el-button type="danger" link @click="onDelete(row)">删除</el-button>
         </template>
       </el-table-column>
+      <template #empty>
+        <el-empty description="暂无后台用户" :image-size="72">
+          <el-button type="primary" @click="openCreate">新增用户</el-button>
+        </el-empty>
+      </template>
     </el-table>
     </div>
     <div class="relay-actions-footer">

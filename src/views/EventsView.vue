@@ -107,6 +107,11 @@ onMounted(load)
           <el-button type="primary" link @click="openDetail(row)">详情</el-button>
         </template>
       </el-table-column>
+      <template #empty>
+        <el-empty description="暂无事件：上游未入站或当前筛选过严" :image-size="72">
+          <el-button @click="onResetFilters">重置筛选</el-button>
+        </el-empty>
+      </template>
     </el-table>
     </div>
     <div class="relay-actions-footer">

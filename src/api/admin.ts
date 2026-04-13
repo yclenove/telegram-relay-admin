@@ -40,7 +40,7 @@ export async function login(username: string, password: string): Promise<LoginRe
 
 export async function fetchDashboard(): Promise<Record<string, number>> {
   const { data } = await http.get<Record<string, number>>('/api/v2/dashboard')
-  return data
+  return data && typeof data === 'object' ? data : {}
 }
 
 export async function fetchBots(): Promise<BotRow[]> {

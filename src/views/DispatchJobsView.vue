@@ -72,6 +72,11 @@ onMounted(load)
       <el-table-column prop="last_error" label="最近错误" min-width="160" show-overflow-tooltip />
       <el-table-column prop="next_attempt_at" label="下次重试" min-width="160" />
       <el-table-column prop="created_at" label="创建时间" min-width="170" />
+      <template #empty>
+        <el-empty description="暂无发送任务：无待投递/重试记录，或状态筛选无匹配" :image-size="72">
+          <el-button @click="onReset">重置筛选</el-button>
+        </el-empty>
+      </template>
     </el-table>
     </div>
     <div class="relay-actions-footer">

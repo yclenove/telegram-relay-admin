@@ -117,3 +117,8 @@ body {
   padding-top: 10px;
   padding-bottom: 10px;
 }
+
+/* 空状态占位略加高度，避免表格区只剩一条细线 */
+.relay-table-wrap .el-table__empty-block {
+  min-height: 220px;
+}
