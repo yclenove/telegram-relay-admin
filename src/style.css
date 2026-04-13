@@ -5,7 +5,8 @@
   --relay-space-md: 16px;
   --relay-space-lg: 24px;
   --relay-radius: 10px;
-  --relay-content-max: 1280px;
+  /* 略放宽上限：仪表盘多列指标时减少两侧死白（列表页仍可读） */
+  --relay-content-max: 1320px;
   /* 侧栏略深于主内容，形成纵向分区 */
   --relay-sidebar-bg: var(--el-fill-color-light);
   /* 顶栏与主区「卡片」承托面 */

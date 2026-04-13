@@ -45,6 +45,13 @@ const statGroups: { title: string; desc: string; accent: string; keys: string[];
   },
 ]
 
+/** 同一组内卡片列宽：4 个指标一行排满；3 个各 8 格；2 个各 12 格，避免窄条悬在左侧显得空。 */
+function colSpanForGroup(keyCount: number) {
+  if (keyCount >= 4) return { xs: 24, sm: 12, md: 6, lg: 6 }
+  if (keyCount === 3) return { xs: 24, sm: 12, md: 8, lg: 8 }
+  return { xs: 24, sm: 12, md: 12, lg: 12 }
+}
+
 function labelFor(k: string) {
   return statLabels[k] ?? k
 }
@@ -75,90 +82,177 @@ onMounted(load)
 </script>
 
 <template>
-  <div v-loading="loading">
-    <header class="relay-section">
+  <!-- 整块承载面 + 更高指标卡：减少首屏下方「全白」与右侧大块留空的观感 -->
+  <div v-loading="loading" class="dashboard-page">
+    <header class="relay-section dash-header">
       <h2 class="relay-page-title">仪表盘</h2>
-      <p class="relay-page-desc">关键运行指标一览；数据来自后端实时统计，可点击刷新更新。</p>
+      <p class="relay-page-desc">关键运行指标一览；数据来自后端实时统计，可在下方卡片内刷新。</p>
     </header>
 
-    <section v-for="group in statGroups" :key="group.title" class="relay-section stat-group">
-      <div class="group-head">
-        <el-icon class="group-ico" :size="20" :style="{ color: group.accent }">
-          <component :is="groupIcons[group.icon]" />
-        </el-icon>
-        <div>
-          <div class="group-title">{{ group.title }}</div>
-          <el-text size="small" type="info">{{ group.desc }}</el-text>
+    <el-card shadow="never" class="dashboard-surface">
+      <section
+        v-for="(group, idx) in statGroups"
+        :key="group.title"
+        class="stat-group"
+        :class="{ 'is-last': idx === statGroups.length - 1 }"
+      >
+        <div class="group-head">
+          <el-icon class="group-ico" :size="22" :style="{ color: group.accent }">
+            <component :is="groupIcons[group.icon]" />
+          </el-icon>
+          <div class="group-head-text">
+            <div class="group-title">{{ group.title }}</div>
+            <el-text size="small" type="info">{{ group.desc }}</el-text>
+          </div>
         </div>
-      </div>
-      <el-row :gutter="16">
-        <el-col v-for="k in group.keys" :key="k" :xs="24" :sm="12" :md="8" :lg="6">
-          <el-card shadow="hover" class="stat-card" :style="{ '--stat-accent': group.accent }">
-            <div class="stat-inner">
-              <div class="stat-label">{{ labelFor(k) }}</div>
-              <div class="stat-value">{{ statValue(k) }}</div>
-            </div>
-          </el-card>
-        </el-col>
-      </el-row>
-    </section>
+        <el-row :gutter="20">
+          <el-col v-for="k in group.keys" :key="k" v-bind="colSpanForGroup(group.keys.length)">
+            <el-card shadow="hover" class="stat-card" :style="{ '--stat-accent': group.accent }">
+              <div class="stat-inner">
+                <div class="stat-label">{{ labelFor(k) }}</div>
+                <div class="stat-value">{{ statValue(k) }}</div>
+              </div>
+            </el-card>
+          </el-col>
+        </el-row>
+      </section>
 
-    <div class="relay-actions-footer">
-      <el-button type="primary" @click="load">
-        <el-icon class="btn-ico"><Odometer /></el-icon>
-        刷新数据
-      </el-button>
-    </div>
+      <div class="dashboard-footer">
+        <el-button type="primary" size="large" @click="load">
+          <el-icon class="btn-ico"><Odometer /></el-icon>
+          刷新数据
+        </el-button>
+        <el-text class="footer-hint" size="small" type="info">上次加载时间以浏览器为准，可多次刷新对齐后端。</el-text>
+      </div>
+    </el-card>
   </div>
 </template>
 
 <style scoped>
-.stat-group .group-head {
+.dashboard-page {
+  width: 100%;
+}
+
+.dash-header {
+  margin-bottom: var(--relay-space-sm);
+}
+
+/* 浅色承载面：把多组指标收进一块「版面」，视觉上占满主区中部，减轻散点感 */
+.dashboard-surface {
+  border-radius: calc(var(--relay-radius) + 2px);
+  border: 1px solid var(--el-border-color-lighter);
+  background: linear-gradient(
+    180deg,
+    var(--el-bg-color) 0%,
+    var(--el-fill-color-lighter) 55%,
+    var(--el-bg-color) 100%
+  );
+  box-shadow: var(--el-box-shadow-lighter);
+}
+
+.dashboard-surface :deep(.el-card__body) {
+  padding: var(--relay-space-lg) var(--relay-space-lg) var(--relay-space-md);
+}
+
+.stat-group {
+  margin-bottom: var(--relay-space-lg);
+  padding-bottom: var(--relay-space-lg);
+  border-bottom: 1px solid var(--el-border-color-lighter);
+}
+
+.stat-group.is-last {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.group-head {
   display: flex;
   align-items: flex-start;
-  gap: 10px;
-  margin-bottom: var(--relay-space-sm);
+  gap: 12px;
+  margin-bottom: var(--relay-space-md);
 }
+
 .group-ico {
   margin-top: 2px;
+  flex-shrink: 0;
 }
+
+.group-head-text {
+  min-width: 0;
+}
+
 .group-title {
-  font-size: 15px;
+  font-size: 17px;
   font-weight: 600;
   color: var(--el-text-color-primary);
-  margin-bottom: 2px;
+  margin-bottom: 4px;
+  letter-spacing: 0.02em;
 }
+
 .stat-card {
   border-radius: var(--relay-radius);
-  margin-bottom: var(--relay-space-sm);
+  margin-bottom: 0;
   overflow: hidden;
   border: 1px solid var(--el-border-color-lighter);
+  min-height: 118px;
 }
+
+.stat-card :deep(.el-card__body) {
+  padding: 18px 20px 18px 20px;
+}
+
 .stat-inner {
   position: relative;
-  padding-left: 12px;
+  padding-left: 14px;
+  min-height: 72px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
+
 .stat-inner::before {
   content: '';
   position: absolute;
   left: 0;
-  top: 0;
-  bottom: 0;
-  width: 3px;
-  border-radius: 2px;
+  top: 6px;
+  bottom: 6px;
+  width: 4px;
+  border-radius: 3px;
   background: var(--stat-accent, var(--el-color-primary));
 }
+
 .stat-label {
   font-size: 13px;
   color: var(--el-text-color-secondary);
+  line-height: 1.4;
 }
+
 .stat-value {
-  font-size: 26px;
-  font-weight: 600;
-  margin-top: 6px;
-  letter-spacing: -0.02em;
+  font-size: 32px;
+  font-weight: 700;
+  margin-top: 10px;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
   color: var(--el-text-color-primary);
+  font-variant-numeric: tabular-nums;
 }
+
+.dashboard-footer {
+  margin-top: var(--relay-space-lg);
+  padding-top: var(--relay-space-md);
+  border-top: 1px dashed var(--el-border-color-lighter);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--relay-space-md);
+}
+
+.footer-hint {
+  flex: 1;
+  min-width: 200px;
+}
+
 .btn-ico {
   margin-right: 6px;
   vertical-align: middle;
