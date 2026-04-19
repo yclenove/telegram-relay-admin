@@ -25,13 +25,16 @@ npm run dev
 npm run build
 ```
 
+**生产环境**必须在构建前设置 **`VITE_API_BASE_URL`** 为后端 API 根地址（含协议与主机），否则 `main.ts` 会在启动时抛错，避免把 `/api` 误打到静态站点自身。
+
 产物在 `dist/`。将 `dist` 部署到 CDN/Nginx，或把路径配置到后端的 `admin_static_dir` / 环境变量 `ADMIN_STATIC_DIR`，由网关进程托管静态文件。
 
 ## 功能概览
 
 - 仪表盘、机器人、**发送目标**（Destination）、路由规则（目标下拉）、事件、审计
 - **用户管理**：列表、新增/编辑（表单内**角色多选**）、删除；依赖后端 `user.manage` 权限（超级管理员默认具备）
-- 登录态将 **token 与 permissions** 写入 `localStorage`，刷新后菜单权限仍有效
+- 登录态将 **access_token、refresh_token 与 permissions** 写入 `localStorage`；接口返回 **401** 时会自动尝试 `POST /api/v2/auth/refresh` 换发新 access，失败再跳转登录。
+- **安全说明**：`localStorage` 会话在 **XSS** 场景下可被窃取；生产环境应通过 **CSP**、依赖审计与输入转义降低风险。页面上的权限展示仅作体验，**真实授权完全由后端 JWT 与接口校验**。
 
 ## 与后端联调
 

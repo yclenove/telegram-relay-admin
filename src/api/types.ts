@@ -88,6 +88,8 @@ export type AuditRow = {
 
 export type LoginResult = {
   access_token: string
+  /** 刷新令牌；存 localStorage，401 时尝试换取新 access_token */
+  refresh_token?: string
   permissions: string[]
 }
 

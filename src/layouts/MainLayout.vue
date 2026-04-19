@@ -1,23 +1,10 @@
 <script setup lang="ts">
-import type { Component } from 'vue'
 import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 // 品牌区使用 Promotion 作轻量角标，与纯文案侧栏形成视觉锚点。
-import {
-  Avatar,
-  Bell,
-  Connection,
-  Cpu,
-  Document,
-  Expand,
-  Fold,
-  List,
-  Odometer,
-  Position,
-  UserFilled,
-  Promotion,
-} from '@element-plus/icons-vue'
+import { Expand, Fold, Promotion } from '@element-plus/icons-vue'
 import { useAuthStore } from '@/stores/auth'
+import { mainLayoutChildRoutes, menuItemsFromRoutes, type MenuItem } from '@/router/nav'
 
 const route = useRoute()
 const router = useRouter()
@@ -31,20 +18,8 @@ function onLogout() {
   router.push({ name: 'login' })
 }
 
-type MenuItem = { path: string; title: string; icon: Component; perm?: string }
-
-/** 菜单项与图标一一对应，提升侧栏扫读性（图标语义近似即可）。 */
-const menuItems: MenuItem[] = [
-  { path: '/dashboard', title: '仪表盘', icon: Odometer },
-  { path: '/bots', title: '机器人', icon: Cpu, perm: 'bot.manage' },
-  { path: '/destinations', title: '发送目标', icon: Position, perm: 'bot.manage' },
-  { path: '/rules', title: '路由规则', icon: Connection, perm: 'rule.manage' },
-  { path: '/events', title: '事件中心', icon: Bell, perm: 'event.read' },
-  { path: '/dispatch-jobs', title: '发送任务', icon: List, perm: 'event.read' },
-  { path: '/audits', title: '审计日志', icon: Document, perm: 'audit.read' },
-  { path: '/roles', title: '角色与权限', icon: UserFilled, perm: 'user.manage' },
-  { path: '/users', title: '用户管理', icon: Avatar, perm: 'user.manage' },
-]
+/** 侧栏项由路由表推导，与 `router/index.ts` 使用同一 `mainLayoutChildRoutes`。 */
+const menuItems = computed<MenuItem[]>(() => menuItemsFromRoutes(mainLayoutChildRoutes))
 
 function canSee(item: MenuItem) {
   if (!item.perm) return true

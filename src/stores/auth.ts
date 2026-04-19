@@ -1,7 +1,7 @@
 import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
 import * as adminApi from '@/api/admin'
-import { PERMISSIONS_KEY, TOKEN_KEY } from '@/api/http'
+import { PERMISSIONS_KEY, REFRESH_TOKEN_KEY, TOKEN_KEY } from '@/api/http'
 
 function loadPermissionsFromStorage(): string[] {
   try {
@@ -24,11 +24,16 @@ export const useAuthStore = defineStore('auth', () => {
 
   const isLoggedIn = computed(() => token.value.length > 0)
 
-  function setSession(accessToken: string, perms: string[]) {
+  function setSession(accessToken: string, perms: string[], refreshToken?: string | null) {
     token.value = accessToken
     permissions.value = perms
     localStorage.setItem(TOKEN_KEY, accessToken)
     localStorage.setItem(PERMISSIONS_KEY, JSON.stringify(perms))
+    if (refreshToken) {
+      localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken)
+    } else {
+      localStorage.removeItem(REFRESH_TOKEN_KEY)
+    }
   }
 
   function clearSession() {
@@ -36,11 +41,12 @@ export const useAuthStore = defineStore('auth', () => {
     permissions.value = []
     localStorage.removeItem(TOKEN_KEY)
     localStorage.removeItem(PERMISSIONS_KEY)
+    localStorage.removeItem(REFRESH_TOKEN_KEY)
   }
 
   async function login(username: string, password: string) {
     const res = await adminApi.login(username, password)
-    setSession(res.access_token, res.permissions ?? [])
+    setSession(res.access_token, res.permissions ?? [], res.refresh_token)
   }
 
   function logout() {
