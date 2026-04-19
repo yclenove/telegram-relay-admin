@@ -100,12 +100,8 @@ function canSee(item: MenuItem) {
       </el-header>
       <el-main class="main">
         <div class="relay-page-inner">
-          <!-- :key 绑定路由，避免 transition + 异步组件在切换后卡在 leave 态导致主区整片空白 -->
-          <router-view v-slot="{ Component }">
-            <transition name="relay-view" mode="out-in">
-              <component :is="Component" v-if="Component" :key="route.fullPath" />
-            </transition>
-          </router-view>
+          <!-- 不使用 transition+out-in：与懒加载子路由组合时，易卡在离场/进场中间态，出现「除仪表盘外全白」 -->
+          <router-view />
         </div>
       </el-main>
     </el-container>
@@ -308,16 +304,4 @@ function canSee(item: MenuItem) {
   padding: 0 !important;
 }
 
-/* 子路由切换：轻量淡入上移，减少「整页硬切」的简陋感 */
-.relay-view-enter-active,
-.relay-view-leave-active {
-  transition:
-    opacity 0.2s ease,
-    transform 0.2s ease;
-}
-.relay-view-enter-from,
-.relay-view-leave-to {
-  opacity: 0;
-  transform: translateY(8px);
-}
 </style>
