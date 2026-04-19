@@ -1,7 +1,7 @@
 /** 与后端 docs/user-quick-guide.md 对齐的要点摘要（构建时不跨仓读文件）。 */
 
 export const quickGuideIntro =
-  '按顺序完成：数据库与私密配置 → 启动 relay → 启动管理台 → 配置机器人 / 发送目标 / 规则 → 在事件中心或「测试推送」验证。'
+  '按顺序完成：数据库与私密配置 → 启动 relay → 启动管理台 → 配置机器人 / 发送目标 / 规则 → 在事件中心或「测试推送」验证。外部 HTTP 对接详见帮助页「第三方接入」Tab。'
 
 export const quickGuideSteps: { title: string; description: string }[] = [
   {
