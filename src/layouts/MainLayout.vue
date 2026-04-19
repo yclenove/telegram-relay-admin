@@ -100,9 +100,10 @@ function canSee(item: MenuItem) {
       </el-header>
       <el-main class="main">
         <div class="relay-page-inner">
+          <!-- :key 绑定路由，避免 transition + 异步组件在切换后卡在 leave 态导致主区整片空白 -->
           <router-view v-slot="{ Component }">
             <transition name="relay-view" mode="out-in">
-              <component :is="Component" />
+              <component :is="Component" v-if="Component" :key="route.fullPath" />
             </transition>
           </router-view>
         </div>
@@ -114,6 +115,8 @@ function canSee(item: MenuItem) {
 <style scoped>
 .app-shell {
   min-height: 100vh;
+  height: 100vh;
+  display: flex;
 }
 .aside {
   border-right: 1px solid var(--el-border-color-light);
@@ -198,7 +201,11 @@ function canSee(item: MenuItem) {
   margin-right: 4px;
 }
 .main-column {
+  flex: 1;
   min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
   background: var(--relay-main-surface);
 }
 .header {
@@ -248,6 +255,9 @@ function canSee(item: MenuItem) {
   background: var(--el-fill-color-light);
 }
 .main {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
   background: var(--relay-page-bg);
   padding: 0;
 }
