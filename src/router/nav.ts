@@ -9,6 +9,8 @@ import {
   List,
   Odometer,
   Position,
+  QuestionFilled,
+  Upload,
   UserFilled,
 } from '@element-plus/icons-vue'
 
@@ -25,19 +27,24 @@ export const mainLayoutChildRoutes: RouteRecordRaw[] = [
     path: 'bots',
     name: 'bots',
     component: () => import('@/views/BotsView.vue'),
-    meta: { title: '机器人', perm: 'bot.manage', menuIcon: Cpu as Component },
+    meta: { title: '机器人', perm: 'bot.manage', menuIcon: Cpu as Component, tourAnchor: 'bots' },
   },
   {
     path: 'destinations',
     name: 'destinations',
     component: () => import('@/views/DestinationsView.vue'),
-    meta: { title: '发送目标', perm: 'bot.manage', menuIcon: Position as Component },
+    meta: {
+      title: '发送目标',
+      perm: 'bot.manage',
+      menuIcon: Position as Component,
+      tourAnchor: 'destinations',
+    },
   },
   {
     path: 'rules',
     name: 'rules',
     component: () => import('@/views/RulesView.vue'),
-    meta: { title: '路由规则', perm: 'rule.manage', menuIcon: Connection as Component },
+    meta: { title: '路由规则', perm: 'rule.manage', menuIcon: Connection as Component, tourAnchor: 'rules' },
   },
   {
     path: 'events',
@@ -69,9 +76,21 @@ export const mainLayoutChildRoutes: RouteRecordRaw[] = [
     component: () => import('@/views/UsersView.vue'),
     meta: { title: '用户管理', perm: 'user.manage', menuIcon: Avatar as Component },
   },
+  {
+    path: 'notify-test',
+    name: 'notify-test',
+    component: () => import('@/views/NotifyTestView.vue'),
+    meta: { title: '测试推送', perm: 'bot.manage', menuIcon: Upload as Component },
+  },
+  {
+    path: 'help',
+    name: 'help',
+    component: () => import('@/views/HelpView.vue'),
+    meta: { title: '帮助', menuIcon: QuestionFilled as Component },
+  },
 ]
 
-export type MenuItem = { path: string; title: string; icon: Component; perm?: string }
+export type MenuItem = { path: string; title: string; icon: Component; perm?: string; tourAnchor?: string }
 
 /** 从路由表推导侧栏项（仅包含有 menuIcon 的叶子页）。 */
 export function menuItemsFromRoutes(routes: RouteRecordRaw[]): MenuItem[] {
@@ -85,6 +104,7 @@ export function menuItemsFromRoutes(routes: RouteRecordRaw[]): MenuItem[] {
       title: (r.meta?.title as string) || r.name?.toString() || '',
       icon,
       perm: r.meta?.perm as string | undefined,
+      tourAnchor: r.meta?.tourAnchor as string | undefined,
     })
   }
   return out

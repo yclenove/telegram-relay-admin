@@ -9,7 +9,7 @@ import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
 export default defineConfig(({ mode }) => {
   // 从 .env / .env.local 读取代理目标，便于本地与不同端口的后端联调。
   const env = loadEnv(mode, process.cwd(), '')
-  const proxyTarget = env.VITE_PROXY_TARGET || 'http://127.0.0.1:8080'
+  const proxyTarget = env.VITE_PROXY_TARGET || 'http://127.0.0.1:8780'
 
   return {
     plugins: [

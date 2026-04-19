@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, nextTick, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 // 品牌区使用 Promotion 作轻量角标，与纯文案侧栏形成视觉锚点。
-import { Expand, Fold, Promotion } from '@element-plus/icons-vue'
+import { Expand, Fold, Promotion, QuestionFilled } from '@element-plus/icons-vue'
 import { useAuthStore } from '@/stores/auth'
 import { mainLayoutChildRoutes, menuItemsFromRoutes, type MenuItem } from '@/router/nav'
 
@@ -12,6 +12,15 @@ const auth = useAuthStore()
 const collapsed = ref(false)
 
 const activePath = computed(() => route.path)
+
+/** 首次进入管理台时引导侧栏关键入口；关闭或完成后写入 localStorage，避免反复打断。 */
+const TOUR_LS_KEY = 'relay_onboarding_done'
+const tourOpen = ref(false)
+const tourDefs: { anchor: string; title: string; description: string }[] = [
+  { anchor: 'bots', title: '机器人', description: '在此配置 Bot Token，至少启用一个用于投递。' },
+  { anchor: 'destinations', title: '发送目标', description: '绑定 Chat ID、Topic 与解析模式。' },
+  { anchor: 'rules', title: '路由规则', description: '按来源、级别、labels 将事件路由到目标。' },
+]
 
 function onLogout() {
   auth.logout()
@@ -25,6 +34,45 @@ function canSee(item: MenuItem) {
   if (!item.perm) return true
   return auth.hasPermission(item.perm)
 }
+
+const activeTourSteps = computed(() =>
+  tourDefs.filter((d) => {
+    const item = menuItems.value.find((m) => m.tourAnchor === d.anchor)
+    return item && canSee(item)
+  }),
+)
+
+function persistTourDone() {
+  try {
+    localStorage.setItem(TOUR_LS_KEY, '1')
+  } catch {
+    /* 隐私模式等不可写时忽略 */
+  }
+}
+
+function onTourClose() {
+  persistTourDone()
+  tourOpen.value = false
+}
+
+function onTourFinish() {
+  persistTourDone()
+  tourOpen.value = false
+}
+
+onMounted(() => {
+  try {
+    if (localStorage.getItem(TOUR_LS_KEY)) return
+  } catch {
+    return
+  }
+  nextTick(() => {
+    const steps = activeTourSteps.value
+    if (!steps.length) return
+    const ok = steps.every((s) => document.getElementById(`relay-tour-${s.anchor}`))
+    if (ok) tourOpen.value = true
+  })
+})
 </script>
 
 <template>
@@ -59,6 +107,7 @@ function canSee(item: MenuItem) {
           <el-menu-item
             v-for="item in menuItems"
             v-show="canSee(item)"
+            :id="item.tourAnchor ? `relay-tour-${item.tourAnchor}` : undefined"
             :key="item.path"
             :index="item.path"
             :route="{ path: item.path }"
@@ -78,6 +127,10 @@ function canSee(item: MenuItem) {
           </div>
         </div>
         <div class="right">
+          <el-button type="primary" link class="help-header-btn" @click="router.push({ name: 'help' })">
+            <el-icon><QuestionFilled /></el-icon>
+            <span>帮助</span>
+          </el-button>
           <!-- 权限码较多时用 Popover 承载全文，顶栏只显示数量，避免挤占标题区。 -->
           <el-popover
             v-if="(auth.permissions ?? []).length"
@@ -105,6 +158,15 @@ function canSee(item: MenuItem) {
         </div>
       </el-main>
     </el-container>
+    <el-tour v-model="tourOpen" type="primary" @close="onTourClose" @finish="onTourFinish">
+      <el-tour-step
+        v-for="step in activeTourSteps"
+        :key="step.anchor"
+        :target="`#relay-tour-${step.anchor}`"
+        :title="step.title"
+        :description="step.description"
+      />
+    </el-tour>
   </el-container>
 </template>
 
@@ -236,6 +298,17 @@ function canSee(item: MenuItem) {
   align-items: center;
   gap: 12px;
   flex-shrink: 0;
+}
+.help-header-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-weight: 500;
+}
+.help-header-btn:hover {
+  background: var(--el-fill-color-light);
 }
 .perm-chip {
   cursor: pointer;

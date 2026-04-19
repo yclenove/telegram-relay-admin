@@ -226,3 +226,21 @@ export async function patchUser(
 export async function deleteUser(id: number): Promise<void> {
   await http.delete(`/api/v2/users/${id}`)
 }
+
+export type NotifyTestPayload = {
+  title: string
+  message: string
+  source: string
+  level?: string
+  event_id?: string
+  event_time?: string
+  labels?: Record<string, string>
+}
+
+export async function testNotify(payload: NotifyTestPayload): Promise<{ event_db_id: number; status: string }> {
+  const { data } = await http.post<{ event_db_id: number; status: string }>('/api/v2/notify-test', payload)
+  return {
+    event_db_id: typeof data?.event_db_id === 'number' ? data.event_db_id : Number(data?.event_db_id),
+    status: typeof data?.status === 'string' ? data.status : 'queued',
+  }
+}

@@ -7,5 +7,7 @@ describe('menuItemsFromRoutes', () => {
     expect(items.find((i) => i.path === '/')).toBeUndefined()
     expect(items.some((i) => i.path === '/dashboard')).toBe(true)
     expect(items.some((i) => i.path === '/bots')).toBe(true)
+    expect(items.some((i) => i.path === '/help')).toBe(true)
+    expect(items.some((i) => i.path === '/notify-test')).toBe(true)
   })
 })
